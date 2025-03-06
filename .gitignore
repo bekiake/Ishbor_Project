@@ -1,0 +1,73 @@
+# Python fayllari
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.sqlite3
+
+# Virtual muhit
+venv/
+env/
+*.venv
+*.env
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django statik va media fayllari
+staticfiles/
+media/
+
+# IDE va kod muharriri sozlamalari
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Migrations kesh fayllari
+*/migrations/*.pyc
+*/migrations/__pycache__/
+
+# Django secret keys yoki .env fayllar
+.env
+*.secrets.json
+
+# Docker uchun
+docker-compose.override.yml
+.dockerignore
+
+# Log fayllari va vaqtinchalik fayllar
+logs/
+*.log
+debug.log
+*.pid
+*.seed
+*.cover
+*.mo
+*.pot
+
+# Celery kesh fayllari
+celerybeat-schedule
+
+# Coverage test natijalari
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+
+# MyPy va Pyright tahlil fayllari
+.mypy_cache/
+.pyrightcache/
+
+# Node.js (agar frontend bo'lsa)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# Heroku va boshqa deploy platformalar uchun
+*.DS_Store
+db.sqlite3

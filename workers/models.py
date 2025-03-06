@@ -1,0 +1,79 @@
+from django.db import models
+
+# Create your models here.
+
+class User(models.Model):
+    telegram_id = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+class Worker(models.Model):
+    PAYMENT_CHOICES = (
+        ('naqd','Naqd'),
+        ('karta','Karta'),
+        ('barchasi','Barchasi')
+    )
+
+    telegram_id = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
+    image = models.ImageField(upload_to='workers/', null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True, verbose_name='Age')
+    phone = models.CharField(max_length=255, null=True, blank=True, verbose_name='Phone', unique=True)
+    gender = models.CharField(max_length=255, null=True, blank=True, verbose_name='Gender')
+    payment_type = models.CharField(max_length=255, choices=PAYMENT_CHOICES, default='barchasi', null=True, blank=True, verbose_name='Payment Type')
+    daily_payment = models.IntegerField(null=True, blank=True, verbose_name='Daily Payment')
+    languages = models.CharField(max_length=255, null=True, blank=True, verbose_name='Languages')
+    skills = models.TextField(max_length=255, null=True, blank=True, verbose_name='Skills')
+    location = models.CharField(max_length=255, null=True, blank=True, verbose_name='Location')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def set_location(self, lat, long):
+        self.location = f"{lat},{long}"
+        self.save()
+
+    def get_location(self):
+        if self.location:
+            try:
+                lat, long = map(float, self.location.split(','))
+                return lat, long
+            except ValueError:
+                return None
+        return None
+
+    def get_languages_list(self):
+        return [lang.strip() for lang in self.languages.split(",")] if self.languages else []
+
+    def get_skills_list(self):
+        return [skill.strip() for skill in self.skills.split(",")] if self.skills else []
+
+    def set_languages(self, languages_list):
+        self.languages = ", ".join(languages_list)
+
+    def set_skills(self, skills_list):
+        self.skills = ", ".join(skills_list)
+
+class Feedback(models.Model):
+    RATE_CHOICES = [
+        (1, '1 - Very Bad'),
+        (2, '2 - Bad'),
+        (3, '3 - Neutral'),
+        (4, '4 - Good'),
+        (5, '5 - Excellent'),
+    ]
+
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rate = models.IntegerField(choices=RATE_CHOICES, default=1)
+    text = models.TextField(max_length=255, null=True, blank=True, verbose_name='Text')
+    create_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.worker.name} - {self.user.name} - {self.rate} - {self.text}"
