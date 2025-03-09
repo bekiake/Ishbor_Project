@@ -70,4 +70,5 @@ yarn-debug.log
 
 # Heroku va boshqa deploy platformalar uchun
 *.DS_Store
-db.sqlite3
+ishbor.db
+

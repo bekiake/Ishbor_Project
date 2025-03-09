@@ -20,17 +20,23 @@ class Worker(models.Model):
         ('barchasi','Barchasi')
     )
 
+    GENDER_CHOICES = (
+        ('male','Male'),
+        ('female','Female')
+    )
+
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
-    image = models.ImageField(upload_to='workers/', null=True, blank=True)
+    image = models.ImageField(upload_to='uploads/workers/', null=True, blank=True)
     age = models.IntegerField(null=True, blank=True, verbose_name='Age')
-    phone = models.CharField(max_length=255, null=True, blank=True, verbose_name='Phone', unique=True)
-    gender = models.CharField(max_length=255, null=True, blank=True, verbose_name='Gender')
+    phone = models.CharField(max_length=255,null=True, blank=True, verbose_name='Phone', unique=True)
+    gender = models.CharField(max_length=255, choices=GENDER_CHOICES, null=True, blank=True, verbose_name='Gender')
     payment_type = models.CharField(max_length=255, choices=PAYMENT_CHOICES, default='barchasi', null=True, blank=True, verbose_name='Payment Type')
     daily_payment = models.IntegerField(null=True, blank=True, verbose_name='Daily Payment')
     languages = models.CharField(max_length=255, null=True, blank=True, verbose_name='Languages')
     skills = models.TextField(max_length=255, null=True, blank=True, verbose_name='Skills')
     location = models.CharField(max_length=255, null=True, blank=True, verbose_name='Location')
+    is_active = models.BooleanField(default=True, verbose_name='Active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
