@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ch_l$asqwt38h!pp%*yc4b3pdcpz24zkda=i8u!^-la*4)d6+2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["admin.ishbozor.uz"]
 
 
 # Application definition
@@ -119,16 +119,16 @@ USE_I18N = True
 
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'  
 
-# Agar `STATICFILES_DIRS` bor bo'lsa, uni ham tekshiring
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles'),
+    BASE_DIR / "staticfiles",  # Barcha statik fayllarni shu yerga joylaysiz
 ]
+
+# Gunicorn/Nginx serverida foydalanish uchun:
+STATIC_ROOT = BASE_DIR / "static"  # `collectstatic` ishlaganda bu yerga jamlanadi
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
