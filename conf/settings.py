@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'conf.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ishbor.db',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'baza',
+        'USER': 'postgres',
+        'PASSWORD': 'Lazizbek1',
+        'HOST': 'localhost',  # Agar PostgreSQL boshqa serverda bo'lsa, uning IP manzilini kiriting
+        'PORT': '5432',  # PostgreSQL-ning standart porti
     }
 }
 
@@ -119,11 +123,11 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Agar `STATICFILES_DIRS` bor bo'lsa, uni ham tekshiring
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'staticfiles'),
 ]
 
 # Default primary key field type
