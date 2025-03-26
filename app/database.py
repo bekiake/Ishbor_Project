@@ -1,19 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
 
-from app.config import SQLALCHEMY_DATABASE_URL
+# PostgreSQL konfiguratsiyasini olish
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "Lazizbek1")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "baza")
 
-# Ma'lumotlar bazasiga ulanish
-# SQLite uchun "check_same_thread" parametri kerak
-connect_args = {}
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
+# SQLAlchemy uchun PostgreSQL URL
+SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# Engine yaratish
+# PostgreSQL uchun engine yaratish
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args=connect_args,
+    SQLALCHEMY_DATABASE_URL,
     pool_pre_ping=True,  # Ulanish mavjudligini tekshirish
     pool_recycle=3600,   # 1 soatdan keyin ulanishlarni yangilash
 )

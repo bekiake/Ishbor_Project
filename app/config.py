@@ -31,21 +31,17 @@ BACKEND_CORS_ORIGINS = [
     "http://localhost:5173",  # Vite frontendi uchun
 ]
 
-# Ma'lumotlar bazasi sozlamalari
-DB_TYPE = os.getenv("DB_TYPE", "sqlite")
+import os
 
-if DB_TYPE == "postgresql":
-    # PostgreSQL uchun
-    DB_USER = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "ishbor_db")
+# PostgreSQL uchun konfiguratsiya
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "Lazizbek1")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "baza")
 
-    SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-else:
-    # SQLite uchun (Django dagi kabi)
-    SQLALCHEMY_DATABASE_URL = f"sqlite:///{BASE_DIR / 'ishbor.db'}"
+# SQLAlchemy PostgreSQL ulanish URL
+SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Static fayllar va media fayllar uchun sozlamalar
 STATIC_URL = "/static/"
