@@ -17,7 +17,7 @@ from app.api.api import api_router
 from app.core.settings import settings
 from app.database import Base, engine
 from app.core.middleware import LogMiddleware
-from app.api.auth import router as auth_router
+from app.api.endpoints.auth import router as auth_router
 
 # Ma'lumotlar bazasi jadvallarini yaratish
 Base.metadata.create_all(bind=engine)
