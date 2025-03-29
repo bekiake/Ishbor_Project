@@ -24,9 +24,10 @@ app = FastAPI(
     description="Ishbor loyihasi uchun FastAPI backend",
     version="1.0.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url=None,  # OpenAPI hujjatlarini himoyalash uchun None qilamiz
-    redoc_url=None,
+    docs_url="/docs",  # OpenAPI Swagger UI yoqiladi
+    redoc_url="/redoc",  # ReDoc hujjatlar ham bo‘lishi mumkin
 )
+
 
 # OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib sozlash
 def custom_openapi():
