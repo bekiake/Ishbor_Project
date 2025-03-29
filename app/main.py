@@ -1,25 +1,24 @@
 """
 FastAPI ilovasi
 
-Loyihaning asosiy fayli
+Ishbor loyihasi uchun FastAPI backend
 """
+
 import logging
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-import uvicorn
-import os
-from pathlib import Path
 import time
+import uvicorn
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
 
 from app.api.api import api_router
 from app.core.settings import settings
 from app.database import Base, engine
 from app.core.middleware import LogMiddleware
 
-
+# Ma'lumotlar bazasi jadvallarini yaratish
 Base.metadata.create_all(bind=engine)
 
 # FastAPI ilovasini yaratish
@@ -34,7 +33,6 @@ app = FastAPI(
 
 # OAuth2 Bearer Token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
-
 
 # OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib o‘zgartirish
 def custom_openapi():
@@ -56,12 +54,9 @@ def custom_openapi():
             "description": "Enter JWT token"
         }
     }
-
     openapi_schema["security"] = [{"Bearer": []}]
-
     app.openapi_schema = openapi_schema
     return openapi_schema
-
 
 app.openapi = custom_openapi
 
@@ -85,7 +80,6 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 # API routerlarini qo'shish
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-
 @app.get("/")
 async def root():
     """Asosiy sahifa"""
@@ -97,28 +91,21 @@ async def root():
         "api_url": settings.API_V1_STR,
     }
 
-
 @app.get("/health")
 async def health_check():
     """Health check endpointi"""
     return {
         "status": "healthy",
         "timestamp": time.time(),
-        "environment": "production" if not settings.DEBUG else "development",
+        "environment": settings.ENV,
     }
 
-
 if __name__ == "__main__":
-    # Agarda to'g'ridan-to'g'ri bu fayl ishga tushirilsa
-    log_level = "info" if not settings.DEBUG else "debug"
-    log_config = uvicorn.config.LOGGING_CONFIG
-    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
-    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
-
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.DEBUG,
-        log_level=log_level,
+    # Log formatini yaxshilash
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=logging.DEBUG if settings.DEBUG else logging.INFO,
     )
+    
+    # Uvicorn serverni ishga tushirish
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=settings.DEBUG)
