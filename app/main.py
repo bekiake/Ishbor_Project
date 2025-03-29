@@ -1,4 +1,8 @@
-z
+"""
+FastAPI ilovasi
+
+Loyihaning asosiy fayli
+"""
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,7 +86,7 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.get("/docs")
+@app.get("/")
 async def root():
     """Asosiy sahifa"""
     return {
