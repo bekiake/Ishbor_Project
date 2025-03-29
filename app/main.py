@@ -11,6 +11,8 @@ import uvicorn
 import os
 from pathlib import Path
 import time
+from fastapi.openapi.utils import get_openapi
+from fastapi.security import OAuth2PasswordBearer
 
 from app.api.api import api_router
 from app.core.settings import settings
@@ -25,14 +27,28 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Ishbor loyihasi uchun FastAPI backend",
     version="1.0.0",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",  # Shu qatordan xatolik chiqishi mumkin
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# Bearer token konfiguratsiyasi
-app.openapi_components = {
-    "securitySchemes": {
+# OAuth2 Bearer Token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
+
+
+# OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib o‘zgartirish
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    openapi_schema["components"]["securitySchemes"] = {
         "Bearer": {
             "type": "http",
             "scheme": "bearer",
@@ -40,9 +56,14 @@ app.openapi_components = {
             "description": "Enter JWT token"
         }
     }
-}
 
-app.openapi_security = [{"Bearer": []}]
+    openapi_schema["security"] = [{"Bearer": []}]
+
+    app.openapi_schema = openapi_schema
+    return openapi_schema
+
+
+app.openapi = custom_openapi
 
 # CORS middleware
 app.add_middleware(

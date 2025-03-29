@@ -5,39 +5,47 @@ JWT token authentication uchun API endpointlari
 """
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer
+
 from app.database import get_db
 from app.schemas.schemas import Token, User, UserCreate
 from app.crud import user as user_crud
 from app.core.security import create_access_token
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 @router.post("/token", response_model=Token)
 async def login_access_token(
-        token: str = Depends(oauth2_scheme),
+        form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db),
 ) -> Any:
     """
-    Faqat Bearer token orqali autentifikatsiya
+    OAuth2 compatible token login
+
+    Form data orqali login qilish va JWT token olish
     """
-    # Token orqali foydalanuvchini aniqlash
-    user = user_crud.get_user_by_token(db, token)
-    
+    # Telegram ID sifatida username ishlatiladi
+    telegram_id = form_data.username
+
+    # Foydalanuvchini tekshirish
+    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Noto'g'ri yoki eskirgan token",
+            detail="Telegram ID noto'g'ri",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Token yaratish
+    access_token = create_access_token(subject=telegram_id)
+
     return {
-        "access_token": token,
+        "access_token": access_token,
         "token_type": "bearer",
     }
+
 
 @router.post("/register", response_model=Token)
 async def register_user(
