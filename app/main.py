@@ -1,15 +1,8 @@
-"""
-FastAPI ilovasi
-
-Loyihaning asosiy fayli
-"""
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
-import os
-from pathlib import Path
 import time
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
@@ -19,8 +12,11 @@ from app.core.settings import settings
 from app.database import Base, engine
 from app.core.middleware import LogMiddleware
 
-
+# Ma'lumotlar bazasini yaratish
 Base.metadata.create_all(bind=engine)
+
+# OAuth2 Bearer Token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
 # FastAPI ilovasini yaratish
 app = FastAPI(
@@ -28,15 +24,11 @@ app = FastAPI(
     description="Ishbor loyihasi uchun FastAPI backend",
     version="1.0.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,  # OpenAPI hujjatlarini himoyalash uchun None qilamiz
+    redoc_url=None,
 )
 
-# OAuth2 Bearer Token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
-
-
-# OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib o‘zgartirish
+# OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib sozlash
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -56,12 +48,9 @@ def custom_openapi():
             "description": "Enter JWT token"
         }
     }
-
     openapi_schema["security"] = [{"Bearer": []}]
-
     app.openapi_schema = openapi_schema
     return openapi_schema
-
 
 app.openapi = custom_openapi
 
@@ -82,24 +71,22 @@ app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 app.mount("/media", StaticFiles(directory=settings.MEDIA_ROOT), name="media")
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
-# API routerlarini qo'shish
-app.include_router(api_router, prefix=settings.API_V1_STR)
-
+# API routerlarini qo'shish va authentication endpointlaridan tashqari barcha endpointlarga autentifikatsiyani majburiy qilish
+app.include_router(api_router, prefix=settings.API_V1_STR, dependencies=[Depends(oauth2_scheme)], include_in_schema=False)
 
 @app.get("/")
-async def root():
+async def root(token: str = Depends(oauth2_scheme)):
     """Asosiy sahifa"""
     return {
         "app_name": settings.PROJECT_NAME,
         "version": "1.0.0",
         "description": "Ishbor loyihasi uchun FastAPI backend",
-        "docs_url": "/docs",
+        "docs_url": settings.API_V1_STR + "/docs",
         "api_url": settings.API_V1_STR,
     }
 
-
 @app.get("/health")
-async def health_check():
+async def health_check(token: str = Depends(oauth2_scheme)):
     """Health check endpointi"""
     return {
         "status": "healthy",
@@ -107,9 +94,7 @@ async def health_check():
         "environment": "production" if not settings.DEBUG else "development",
     }
 
-
 if __name__ == "__main__":
-    # Agarda to'g'ridan-to'g'ri bu fayl ishga tushirilsa
     log_level = "info" if not settings.DEBUG else "debug"
     log_config = uvicorn.config.LOGGING_CONFIG
     log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
