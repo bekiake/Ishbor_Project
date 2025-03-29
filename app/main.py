@@ -1,8 +1,15 @@
+"""
+FastAPI ilovasi
+
+Loyihaning asosiy fayli
+"""
 import logging
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
+import os
+from pathlib import Path
 import time
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
@@ -13,10 +20,9 @@ from app.database import Base, engine
 from app.core.middleware import LogMiddleware
 
 
-# 📌 Ma'lumotlar bazasini yaratish
 Base.metadata.create_all(bind=engine)
 
-# 📌 FastAPI ilovasini yaratish
+# FastAPI ilovasini yaratish
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Ishbor loyihasi uchun FastAPI backend",
@@ -26,11 +32,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# 📌 OAuth2 Bearer Token uchun konfiguratsiya
+# OAuth2 Bearer Token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
 
-# 📌 Swagger UI (OpenAPI) uchun autentifikatsiya qo‘shish
+# OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib o‘zgartirish
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -43,27 +49,23 @@ def custom_openapi():
     )
 
     openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
+        "Bearer": {
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": "Enter JWT token here",
+            "description": "Enter JWT token"
         }
     }
 
-    # 🔹 Barcha endpointlarga "security" qo‘shish
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
-            if "security" not in method:
-                method["security"] = [{"BearerAuth": []}]
+    openapi_schema["security"] = [{"Bearer": []}]
 
     app.openapi_schema = openapi_schema
     return openapi_schema
 
+
 app.openapi = custom_openapi
 
-
-# 📌 CORS middleware
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
@@ -72,22 +74,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 📌 Logging middleware
+# Logging middleware
 app.add_middleware(LogMiddleware)
 
-# 📌 Static va media fayllar uchun mounting
+# Static va media fayllar uchun mounting
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 app.mount("/media", StaticFiles(directory=settings.MEDIA_ROOT), name="media")
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
-
-# 📌 API routerlarni qo‘shish (lekin `/token` endpointidan autentifikatsiyani olib tashlash)
+# API routerlarini qo'shish
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-# 📌 Asosiy sahifa
 @app.get("/")
 async def root():
+    """Asosiy sahifa"""
     return {
         "app_name": settings.PROJECT_NAME,
         "version": "1.0.0",
@@ -97,9 +98,9 @@ async def root():
     }
 
 
-# 📌 Health Check (avtorizatsiyasiz)
 @app.get("/health")
 async def health_check():
+    """Health check endpointi"""
     return {
         "status": "healthy",
         "timestamp": time.time(),
@@ -107,8 +108,8 @@ async def health_check():
     }
 
 
-# 📌 Ishga tushirish
 if __name__ == "__main__":
+    # Agarda to'g'ridan-to'g'ri bu fayl ishga tushirilsa
     log_level = "info" if not settings.DEBUG else "debug"
     log_config = uvicorn.config.LOGGING_CONFIG
     log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
