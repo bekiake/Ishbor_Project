@@ -1,6 +1,4 @@
 """
-FastAPI ilovasi
-
 Ishbor loyihasi uchun FastAPI backend
 """
 
@@ -36,7 +34,6 @@ app = FastAPI(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
 # OpenAPI sxemasini faqat Bearer token orqali ishlaydigan qilib o‘zgartirish
-
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -80,14 +77,7 @@ app.mount("/media", StaticFiles(directory=settings.MEDIA_ROOT), name="media")
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # API routerlarini qo'shish
-auth_excluded_routes = {"/token", "/register", "/telegram-auth"}
-
-def auth_dependency(request):
-    if request.url.path not in auth_excluded_routes:
-        return Depends(oauth2_scheme)
-    return None
-
-app.include_router(api_router, prefix=settings.API_V1_STR, dependencies=[Depends(auth_dependency)])
+app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth")
 
 @app.get("/")
