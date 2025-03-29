@@ -14,10 +14,12 @@ from app.core.settings import settings
 from app.database import get_db
 from app.crud import user as user_crud
 
+from fastapi.security import OAuth2PasswordBearer
+
 # OAuth2 sxema - endpoint token URL
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/token",
-    scheme_name="JWT",
+    tokenUrl="/api/v1/auth/token",  # "/auth/token" emas, aynan token URL bo‘lishi kerak!
+    scheme_name="Bearer",
     description="HTTP Authorization header with JWT token, prefixed by 'Bearer'"
 )
 

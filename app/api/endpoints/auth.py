@@ -12,11 +12,14 @@ from app.database import get_db
 from app.schemas.schemas import Token, UserCreate
 from app.crud import user as user_crud
 from app.core.security import create_access_token
+from app.core.settings import settings  # settings dan foydalanamiz
+
 
 router = APIRouter()
 
 # Faqat Bearer token orqali kirish uchun
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
 def generate_access_token(telegram_id: str) -> dict:
     """JWT token yaratish"""
