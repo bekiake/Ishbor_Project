@@ -224,12 +224,15 @@ async def read_worker(
 
     # Fikrlarni olish
     feedbacks = feedback_crud.get_worker_feedbacks(db, worker_id=worker_id)
+    if feedbacks is None:
+        return worker
 
+    else:
     # Response tayyorlash
-    worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
-    worker_with_feedbacks.feedbacks = feedbacks
+        worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
+        worker_with_feedbacks.feedbacks = feedbacks
 
-    return worker_with_feedbacks
+        return worker_with_feedbacks
 
 
 @router.put("/{worker_id}", response_model=Worker)

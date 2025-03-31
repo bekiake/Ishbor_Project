@@ -43,9 +43,6 @@ def get_worker_feedbacks(
     """
     query = db.query(Feedback).filter(Feedback.worker_id == worker_id)
 
-    if is_active:
-        query = query.filter(Feedback.is_active == True)
-
     return query.order_by(Feedback.create_at.desc()).offset(skip).limit(limit).all()
 
 
