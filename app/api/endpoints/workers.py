@@ -45,7 +45,7 @@ async def read_workers(
 
 @router.get("/me", response_model = dict)
 async def read_worker_me(
-        current_user: str = Depends(get_current_user),
+        current_user: User = Depends(get_current_active_user),
         db: Session = Depends(get_db)
 ):
     """
@@ -54,7 +54,10 @@ async def read_worker_me(
     Returns:
         dict: Worker information
     """
-    worker = worker_crud.get_worker_by_telegram_id(db, current_user)
+    # Extract the telegram_id string from the User object
+    telegram_id = current_user.telegram_id
+
+    worker = worker_crud.get_worker_by_telegram_id(db, telegram_id)
     if not worker:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
