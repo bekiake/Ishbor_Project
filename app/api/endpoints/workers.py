@@ -57,7 +57,7 @@ async def read_worker_me(
     # Extract the telegram_id string from the User object
     telegram_id = current_user.telegram_id
 
-    worker = worker_crud.get_worker_by_telegram_id(db, telegram_id)
+    worker = worker_crud.get_worker_by_telegram_id(db, 1122)
     if not worker:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
