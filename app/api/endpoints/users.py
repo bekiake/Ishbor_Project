@@ -26,7 +26,19 @@ async def register_user(
     
     user = user_crud.get_user_by_telegram_id(db, telegram_id=user_in.telegram_id)
     if not user:
-        user = user_crud.create_user(db=db, user=user_in)
+        print(user.telegram_id)
+        print(user.name)
+        print(user.is_worker)
+        
+        db_user = User(
+        telegram_id=user.telegram_id,
+        name=user.name,
+        is_worker=user.is_worker,
+    )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
         token = generate_access_token(user.telegram_id)
         return {
             "access_token": token,
