@@ -25,9 +25,9 @@ async def register_user(
     is_worker: bool = False,
     db: Session = Depends(get_db),
 ) -> Any:
-    print(user.telegram_id)
-    print(user.name)
-    print(user.is_worker)
+    print(telegram_id)
+    print(name)
+    print(is_worker)
     user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if not user:
         db_user = User(
