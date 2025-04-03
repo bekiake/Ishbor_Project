@@ -3,7 +3,7 @@ User API endpointlari
 
 User uchun API endpointlari
 """
-from typing import Any, List
+from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.api.endpoints.auth import generate_access_token
 from sqlalchemy.orm import Session
@@ -20,20 +20,20 @@ router = APIRouter()
 
 @router.post("/register")
 async def register_user(
-    user_in: UserCreate,
+    telegram_id: str,
+    name: Optional[str] = None,
+    is_worker: bool = False,
     db: Session = Depends(get_db),
 ) -> Any:
-    
-    user = user_crud.get_user_by_telegram_id(db, telegram_id=user_in.telegram_id)
+    print(user.telegram_id)
+    print(user.name)
+    print(user.is_worker)
+    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if not user:
-        print(user.telegram_id)
-        print(user.name)
-        print(user.is_worker)
-        
         db_user = User(
-        telegram_id=user.telegram_id,
-        name=user.name,
-        is_worker=user.is_worker,
+        telegram_id=telegram_id,
+        name=name,
+        is_worker=is_worker,
     )
         db.add(db_user)
         db.commit()
