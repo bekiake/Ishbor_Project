@@ -42,13 +42,17 @@ async def register_user(
         token = generate_access_token(user.telegram_id)
         return {
             "access_token": token,
-            "user": user,
+            "is_worker": is_worker,
+            "name": name,
+            "telegram_id": telegram_id,
             "registered": True,
         }
     token = generate_access_token(user.telegram_id)
     return {
         "access_token": token,
-        "user": user,
+        "name": name,
+        "telegram_id": telegram_id,
+        "is_worker": is_worker,
         "registered": False,
     }
         
