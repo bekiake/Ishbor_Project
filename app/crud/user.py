@@ -25,6 +25,7 @@ def create_user(db: Session, user: UserCreate) -> User:
     db_user = User(
         telegram_id=user.telegram_id,
         name=user.name,
+        is_worker=user.is_worker,
     )
     db.add(db_user)
     db.commit()

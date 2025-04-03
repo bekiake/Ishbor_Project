@@ -20,6 +20,8 @@ from app.schemas.schemas import (
 )
 from app.crud import worker as worker_crud
 from app.crud import feedback as feedback_crud
+from app.crud import user as user_crud
+
 from app.core.security import get_current_active_user
 from app.core.settings import settings
 from app.models.models import User
@@ -48,12 +50,7 @@ async def read_worker_me(
         current_user: User = Depends(get_current_active_user),
         db: Session = Depends(get_db)
 ):
-    """
-    Get current worker information based on their authentication token
-
-    Returns:
-        dict: Worker information
-    """
+    
     # Extract the telegram_id string from the User object
     telegram_id = current_user.telegram_id
 
@@ -98,11 +95,7 @@ async def create_worker_with_image(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Yangi ishchi yaratish (rasm bilan)
-
-    Form data orqali ma'lumotlarni va rasmni yuborish mumkin
-    """
+   
     # Avval ishchi mavjudligini tekshirish
     db_worker = worker_crud.get_worker_by_telegram_id(db, telegram_id = telegram_id)
     if db_worker:
@@ -180,11 +173,7 @@ async def search_workers(
         limit: int = Query(20, description = "Qaytariladigan ma'lumotlar soni"),
         db: Session = Depends(get_db),
 ) -> Any:
-    """
-    Ishchilarni qidirish
-
-    Turli parametrlar bo'yicha ishchilarni qidirish imkonini beradi
-    """
+    
     # Qidirish parametrlarini yaratish
     search_params = WorkerSearchParams(
         skills = skills,
@@ -228,10 +217,16 @@ async def read_worker(
         return worker
 
     else:
-        # Response tayyorlash
+        worker_name = worker_crud.get_worker(db, worker_id = worker_id).name
+        
+        for feedback in feedbacks:
+            feedback_user_name = user_crud.get_user(db, user_id = feedback.user_id).name
+            
+        
         worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
         worker_with_feedbacks.feedbacks = feedbacks
-
+        worker_with_feedbacks.worker_name = worker_name
+        
         return worker_with_feedbacks
 
 

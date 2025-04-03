@@ -5,6 +5,7 @@ from django.db import models
 class User(models.Model):
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True)
+    is_worker = models.BooleanField(default=False, verbose_name='Is Worker')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

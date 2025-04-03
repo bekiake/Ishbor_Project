@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     """User uchun asosiy ma'lumotlar"""
     telegram_id: str
     name: Optional[str] = None
+    is_worker: bool = False
 
 
 class UserCreate(UserBase):

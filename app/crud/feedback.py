@@ -28,19 +28,7 @@ def get_feedback(db: Session, feedback_id: int) -> Optional[Feedback]:
 def get_worker_feedbacks(
     db: Session, worker_id: int, skip: int = 0, limit: int = 100, is_active: bool = True
 ) -> List[Feedback]:
-    """
-    Ishchi haqidagi fikrlarni olish
-
-    Args:
-        db: Database session
-        worker_id: Ishchi ID si
-        skip: O'tkazib yuborish uchun ma'lumotlar soni
-        limit: Qaytariladigan ma'lumotlar soni
-        is_active: Faqat faol fikrlarni qaytarish
-
-    Returns:
-        List[Feedback]: Fikrlar ro'yxati
-    """
+    
     query = db.query(Feedback).filter(Feedback.worker_id == worker_id)
 
     return query.order_by(Feedback.create_at.desc()).offset(skip).limit(limit).all()

@@ -12,6 +12,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(String(100), unique=True, index=True)
+    is_worker = Column(Boolean, default=False)
     name = Column(String(255), nullable=True)
     created = Column(DateTime, default=func.now())
     updated = Column(DateTime, default=func.now(), onupdate=func.now())
