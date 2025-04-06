@@ -286,18 +286,19 @@ class WorkerDetail(BaseModel):
     feedbacks: List[FeedbackResponse]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserOut(BaseModel):
     id: int
+    name: str
     telegram_id: str
     is_worker: bool
     created: Optional[datetime]
     updated: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class WorkerOut(BaseModel):
