@@ -161,35 +161,38 @@ async def search_workers(
     )
     return workers
 
-
 @router.get("/{worker_id}")
 async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
+    # Worker ma'lumotlarini olish
     stmt = select(models.Worker).filter(models.Worker.id == worker_id)
-    
-    # So'rovni bajarish va natijani olish
-    result = await db.execute(stmt)  # So'rovni kutish
-    workers = result.scalar_one_or_none()  # await kalit so'zini olib tashlang
+    result = await db.execute(stmt)
+    workers = result.scalar_one_or_none()
     
     if not workers:
         raise HTTPException(status_code=404, detail="Worker not found")
     
-    # Feedbacklarni olish
-    stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
-    result = await db.execute(stmt)  # So'rovni kutish
-    feedbacks = result.scalars().all()
+    # Feedbacklarni olish va user bilan join qilish
+    stmt = select(models.Feedback, models.User).outerjoin(
+        models.User, models.Feedback.user_id == models.User.id
+    ).filter(models.Feedback.worker_id == worker_id)
+    
+    result = await db.execute(stmt)
+    feedback_results = result.all()
     
     # Feedbacklarni formatlash
-    feedbacks_data = [
-        {
+    feedbacks_data = []
+    for feedback_row in feedback_results:
+        feedback = feedback_row[0]  # Feedback obyekti
+        user = feedback_row[1]      # User obyekti (null bo'lishi mumkin)
+        
+        feedbacks_data.append({
             "id": feedback.id,
             "rate": feedback.rate,
             "text": feedback.text,
             "create_at": feedback.create_at,
             "update_at": feedback.update_at,
-            "user_name": feedback.user.name if feedback.user else "Anonymous"
-        }
-        for feedback in feedbacks
-    ]
+            "user_name": user.name if user else "Anonymous"
+        })
     
     # Worker va feedbacklar bilan javob qaytarish
     return {
@@ -208,7 +211,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
         "is_active": workers.is_active,
         "created_at": workers.created_at,
         "updated_at": workers.updated_at,
-        "feedbacks": feedbacks_data if feedbacks else None
+        "feedbacks": feedbacks_data if feedbacks_data else None
     }
 
 
