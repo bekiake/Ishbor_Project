@@ -138,7 +138,7 @@ class Worker(WorkerInDBBase):
             return location_coords
         return values
 
-class Feedback(BaseModel):
+class Feedbackss(BaseModel):
     id: Optional[int]  # `id` avtomatik tarzda yaratiladi
     worker_id: int
     user_id: int

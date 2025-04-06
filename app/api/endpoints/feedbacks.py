@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.schemas import Feedback, FeedbackCreate, FeedbackUpdate
+from app.schemas.schemas import Feedback, FeedbackCreate, FeedbackUpdate, Feedbackss
 from app.crud import feedback as feedback_crud
 from app.crud import worker as worker_crud
 from app.crud import user as user_crud
@@ -17,6 +17,7 @@ from app.core.security import get_current_active_user
 from app.models.models import User
 
 router = APIRouter()
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     worker_id: int,
@@ -36,7 +37,7 @@ async def create_feedback(
         )
 
     # Feedback yaratish
-    db_feedback = Feedback(
+    db_feedback = Feedbackss(
         worker_id=worker_id,
         user_id=user_id,  # Foydalanuvchi ID sini qo'shish
         rate=rate,
