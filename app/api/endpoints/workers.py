@@ -168,7 +168,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
     
     # So'rovni bajarish va natijani olish
     result = await db.execute(stmt)  # So'rovni kutish
-    workers = await result.scalar_one_or_none()  # Natijani olish
+    workers = result.scalar_one_or_none()  # Natijani olish
     
     if not workers:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -176,7 +176,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
     # Feedbacklarni olish
     stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
     result = await db.execute(stmt)  # So'rovni kutish
-    feedbacks = await result.scalars().all()  # Feedbacklarni olish
+    feedbacks = result.scalars().all()  # Feedbacklarni olish
     
     # Feedbacklarni formatlash
     feedbacks_data = [
