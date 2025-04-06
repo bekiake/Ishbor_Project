@@ -18,7 +18,9 @@ class WorkerAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'worker', 'user', 'rate', 'create_at')
-    list_filter = ('rate',)
+    list_display = ('id', 'worker', 'user', 'rate', 'text', 'create_at')
     search_fields = ('worker__name', 'user__name', 'text')
     ordering = ('-create_at',)
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
