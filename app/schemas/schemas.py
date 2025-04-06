@@ -287,3 +287,35 @@ class WorkerDetail(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserOut(BaseModel):
+    id: int
+    telegram_id: str
+    is_worker: bool
+    created: Optional[datetime]
+    updated: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
+class WorkerOut(BaseModel):
+    id: int
+    telegram_id: str
+    name: str
+    age: int
+    phone: str
+    gender: str
+    payment_type: str
+    daily_payment: int
+    languages: str
+    skills: str
+    location: str
+    image: Optional[str]
+    is_active: bool
+    created: Optional[datetime]
+    updated: Optional[datetime]
+
+    class Config:
+        orm_mode = True
