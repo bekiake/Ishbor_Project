@@ -286,37 +286,38 @@ class WorkerDetail(BaseModel):
     feedbacks: List[FeedbackResponse]
 
     class Config:
-        from_attributes = True
-
+        orm_mode = True
 
 class UserOut(BaseModel):
     id: int
-    name: str
     telegram_id: str
     is_worker: bool
-    created: Optional[datetime]
-    updated: Optional[datetime]
+    name: Optional[str] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class WorkerOut(BaseModel):
     id: int
     telegram_id: str
-    name: str
-    age: int
-    phone: str
-    gender: str
-    payment_type: str
-    daily_payment: int
-    languages: str
-    skills: str
-    location: str
-    image: Optional[str]
-    is_active: bool
-    created: Optional[datetime]
-    updated: Optional[datetime]
+    name: Optional[str] = None
+    image: Optional[str] = None
+    age: Optional[int] = None
+    phone: Optional[str] = None
+    gender: Optional[str] = None
+    payment_type: Optional[str] = "barchasi"
+    daily_payment: Optional[int] = None
+    languages: Optional[str] = None
+    skills: Optional[str] = None
+    location: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_active: Optional[bool] = True
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
