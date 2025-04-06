@@ -190,12 +190,48 @@ async def search_workers(
     return workers
 
 
-@router.get("/{worker_id}", response_model=WorkerDetail)
+@router.get("/{worker_id}")
 def get_worker_detail(worker_id: int, db: Session = Depends(get_db)):
-    worker = feedback_crud.get_worker_with_feedbacks(db, worker_id)
+    
+    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
-    return worker
+    
+    feedbacks = db.query(Feedback).filter(Feedback.worker_id == worker_id).all()
+    feedbacks_data = [
+        {
+            "id": feedback.id,
+            "rate": feedback.rate,
+            "text": feedback.text,
+            "create_at": feedback.create_at,
+            "update_at": feedback.update_at,
+            "user_name": feedback.user.name  # Userning ismi
+        }
+        for feedback in feedbacks
+    ]
+    
+    return {
+        "id":worker.id,
+        "telegram_id":worker.telegram_id,
+        "name":worker.name,
+        "image":worker.image,
+        "age":worker.age,
+        "phone":worker.phone,
+        "gender":worker.gender,
+        "payment_type":worker.payment_type,
+        "daily_payment":worker.daily_payment,
+        "languages":worker.languages,
+        "skills":worker.skills,
+        "location":worker.location,
+        "is_active":worker.is_active,
+        "created_at":worker.created_at,
+        "updated_at":worker.updated_at,
+        "feedbacks":feedbacks_data if feedbacks else None 
+    }
+    
+    
+    
 
 @router.put("/{worker_id}", response_model = Worker)
 async def update_worker(

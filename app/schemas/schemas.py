@@ -155,7 +155,6 @@ class FeedbackCreate(BaseModel):
     
 
 class FeedbackResponse(BaseModel):
-    # Define fields that correspond to the Feedback model's attributes
     id: int
     text: str
     rating: int
