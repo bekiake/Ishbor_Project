@@ -138,6 +138,19 @@ class Worker(WorkerInDBBase):
             return location_coords
         return values
 
+class Feedback(BaseModel):
+    id: Optional[int]  # `id` avtomatik tarzda yaratiladi
+    worker_id: int
+    user_id: int
+    rate: int
+    text: str
+    create_at: Optional[datetime] = None  # Yaratilish sanasi
+    update_at: Optional[datetime] = None  # Yangilanish sanasi
+    user_name: Optional[str] = None  # Foydalanuvchi nomi (agar kerak bo'lsa)
+
+    class Config:
+        orm_mode = True
+
 
 # Feedback schemas
 class FeedbackBase(BaseModel):
