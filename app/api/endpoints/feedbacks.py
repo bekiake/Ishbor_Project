@@ -24,7 +24,7 @@ async def create_feedback(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    
+    user_id = current_user.id
     # Ishchi mavjudligini tekshirish
     worker = worker_crud.get_worker(db, worker_id=feedback_in.worker_id)
     if worker is None:
@@ -34,7 +34,7 @@ async def create_feedback(
         )
 
     # Foydalanuvchi mavjudligini tekshirish
-    user = user_crud.get_user(db, user_id=feedback_in.user_id)
+    user = user_crud.get_user(db, user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
