@@ -13,6 +13,8 @@ from app.schemas.schemas import Token, User, UserCreate, UserUpdate, UserWithFee
 from app.crud import user as user_crud
 from app.crud import feedback as feedback_crud
 from app.core.security import get_current_active_user
+import random
+import string
 
 router = APIRouter()
 
@@ -25,11 +27,13 @@ async def check_user(
     if not user:
         return {"registered": False}
     
+    token = generate_access_token(telegram_id)
     return {
         "registered": True,
         "is_worker": user.is_worker,
         "name": user.name,
         "telegram_id": user.telegram_id,
+        "access_token": token.get("access_token"),
     }
 
 @router.post("/register")
@@ -70,7 +74,7 @@ async def register_user(
 
 
 def generate_random_telegram_id(length=10):
-    """Generate a random Telegram ID (string of digits)."""
+    
     return ''.join(random.choices(string.digits, k=length))
 
 
