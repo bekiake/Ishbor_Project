@@ -4,6 +4,7 @@ from fastapi import (
     Form, UploadFile, File, Path, Body,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 import aiofiles  # Asinxron fayl operatsiyalari uchun
 import os
 from pathlib import Path as FilePath
@@ -162,15 +163,16 @@ async def search_workers(
 
 @router.get("/{worker_id}")
 async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
+    
     worker = await db.execute(
-        db.query(models.Worker).filter(models.Worker.id == worker_id)
+        select(models.Worker).filter(models.Worker.id == worker_id)
     ).scalar_one_or_none()
     
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
     
     feedbacks = await db.execute(
-        db.query(models.Feedback).filter(models.Feedback.worker_id == worker_id)
+        select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
     ).scalars().all()
     
     feedbacks_data = [
