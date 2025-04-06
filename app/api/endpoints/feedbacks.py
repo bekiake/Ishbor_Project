@@ -14,7 +14,7 @@ from app.crud import feedback as feedback_crud
 from app.crud import worker as worker_crud
 from app.crud import user as user_crud
 from app.core.security import get_current_active_user
-from app.models.models import User
+from app.models import models
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ async def create_feedback(
     text: str = Query(..., min_length=1, max_length=500),  # Fikr matni 1 dan 500 ta belgigacha bo'lishi kerak
     rate: int = Query(..., ge=1, le=5),  # Rate 1 dan 5 gacha bo'lishi kerak
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
     user_id = current_user.id  # Hozirgi autentifikatsiyalangan foydalanuvchining ID sini olish
 
@@ -37,14 +37,11 @@ async def create_feedback(
         )
 
     # Feedback yaratish
-    db_feedback = Feedbackss(
+    db_feedback = models.Feedback(
         worker_id=worker_id,
         user_id=user_id,  # Foydalanuvchi ID sini qo'shish
         rate=rate,
-        text=text,
-        create_at=datetime.datetime.utcnow(),  # Yaratilish sanasini o'rnatish
-        update_at=datetime.datetime.utcnow(),  # Yangilanish sanasini o'rnatish
-        user_name=current_user.name,  # Agar kerak bo'lsa, foydalanuvchi nomini qo'shish
+        text=text
     )
     db.add(db_feedback)
     db.commit()
@@ -65,7 +62,7 @@ async def create_feedback(
 async def delete_feedback(
         feedback_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
 ) -> dict:
     feedback = feedback_crud.get_feedback(db, feedback_id=feedback_id)
     if feedback is None:
