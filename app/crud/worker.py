@@ -1,10 +1,6 @@
-"""
-Worker CRUD operatsiyalari
-
-Worker modeli uchun CRUD (Create, Read, Update, Delete) operatsiyalari
-"""
 from typing import List, Optional, Dict, Any, Tuple
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy import func, or_, and_
 import math
 
@@ -12,72 +8,34 @@ from app.models.models import Worker, Feedback
 from app.schemas.schemas import WorkerCreate, WorkerUpdate, WorkerLocation, WorkerSearchParams
 
 
-def get_worker(db: Session, worker_id: int) -> Optional[Worker]:
-    """
-    ID bo'yicha ishchini olish
-
-    Args:
-        db: Database session
-        worker_id: Ishchi ID si
-
-    Returns:
-        Optional[Worker]: Ishchi ma'lumotlari yoki None
-    """
-    return db.query(Worker).filter(Worker.id == worker_id).first()
+async def get_worker(db: AsyncSession, worker_id: int) -> Optional[Worker]:
+    result = await db.execute(select(Worker).filter(Worker.id == worker_id))
+    return result.scalar_one_or_none()
 
 
-def get_worker_by_telegram_id(db: Session, telegram_id: str) -> Optional[Worker]:
-    """
-    Telegram ID bo'yicha ishchini olish
-
-    Args:
-        db: Database session
-        telegram_id: Ishchi Telegram ID si
-
-    Returns:
-        Optional[Worker]: Ishchi ma'lumotlari yoki None
-    """
-    return db.query(Worker).filter(Worker.telegram_id == telegram_id).first()
+async def get_worker_by_telegram_id(db: AsyncSession, telegram_id: str) -> Optional[Worker]:
+    result = await db.execute(select(Worker).filter(Worker.telegram_id == telegram_id))
+    return result.scalar_one_or_none()
 
 
-def get_worker_by_phone(db: Session, phone: str) -> Optional[Worker]:
-    """
-    Telefon raqami bo'yicha ishchini olish
-
-    Args:
-        db: Database session
-        phone: Ishchi telefon raqami
-
-    Returns:
-        Optional[Worker]: Ishchi ma'lumotlari yoki None
-    """
-    return db.query(Worker).filter(Worker.phone == phone).first()
+async def get_worker_by_phone(db: AsyncSession, phone: str) -> Optional[Worker]:
+    result = await db.execute(select(Worker).filter(Worker.phone == phone))
+    return result.scalar_one_or_none()
 
 
-def get_workers(
-        db: Session, skip: int = 0, limit: int = 100, is_active: bool = True
+async def get_workers(
+        db: AsyncSession, skip: int = 0, limit: int = 100, is_active: bool = True
 ) -> List[Worker]:
-    """
-    Ishchilar ro'yxatini olish
-
-    Args:
-        db: Database session
-        skip: O'tkazib yuborish uchun ma'lumotlar soni
-        limit: Qaytariladigan ma'lumotlar soni
-        is_active: Faqat faol ishchilarni qaytarish
-
-    Returns:
-        List[Worker]: Ishchilar ro'yxati
-    """
-    query = db.query(Worker)
+    query = select(Worker).offset(skip).limit(limit)
 
     if is_active:
         query = query.filter(Worker.is_active == True)
 
-    return query.offset(skip).limit(limit).all()
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
-def create_worker(db: Session, worker: WorkerCreate) -> Worker:
+async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
     db_worker = Worker(
         telegram_id=worker.telegram_id,
         name=worker.name,
@@ -91,8 +49,8 @@ def create_worker(db: Session, worker: WorkerCreate) -> Worker:
         location=worker.location,
     )
     db.add(db_worker)
-    db.commit()
-    db.refresh(db_worker)
+    await db.commit()
+    await db.refresh(db_worker)
 
     if db_worker.languages:
         db_worker.languages_list = [lang.strip() for lang in db_worker.languages.split(',')]
@@ -116,91 +74,65 @@ def create_worker(db: Session, worker: WorkerCreate) -> Worker:
     return db_worker
 
 
-def update_worker(db: Session, worker_id: int, worker_update: WorkerUpdate) -> Optional[Worker]:
-    """
-    Ishchi ma'lumotlarini yangilash
-
-    Args:
-        db: Database session
-        worker_id: Ishchi ID si
-        worker_update: Yangilanayotgan ma'lumotlar
-
-    Returns:
-        Optional[Worker]: Yangilangan ishchi ma'lumotlari yoki None
-    """
-    db_worker = get_worker(db, worker_id)
+async def update_worker(db: AsyncSession, worker_id: int, worker_update: WorkerUpdate) -> Optional[Worker]:
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
         update_data = worker_update.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_worker, field, value)
-        db.commit()
-        db.refresh(db_worker)
+        await db.commit()
+        await db.refresh(db_worker)
     return db_worker
 
 
-def update_worker_location(
-        db: Session, worker_id: int, location: WorkerLocation
+async def update_worker_location(
+        db: AsyncSession, worker_id: int, location: WorkerLocation
 ) -> Optional[Worker]:
-    """
-    Ishchi lokatsiyasini yangilash
-
-    Args:
-        db: Database session
-        worker_id: Ishchi ID si
-        location: Yangi lokatsiya ma'lumotlari
-
-    Returns:
-        Optional[Worker]: Yangilangan ishchi ma'lumotlari yoki None
-    """
-    db_worker = get_worker(db, worker_id)
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
         db_worker.location = f"{location.latitude},{location.longitude}"
-        db.commit()
-        db.refresh(db_worker)
+        await db.commit()
+        await db.refresh(db_worker)
     return db_worker
 
 
-def update_worker_image(db: Session, worker_id: int, image_path: str) -> Optional[Worker]:
-
-    db_worker = get_worker(db, worker_id)
+async def update_worker_image(db: AsyncSession, worker_id: int, image_path: str) -> Optional[Worker]:
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
         db_worker.image = image_path
-        db.commit()
-        db.refresh(db_worker)
+        await db.commit()
+        await db.refresh(db_worker)
     return db_worker
 
 
-def update_worker_status(db: Session, worker_id: int, is_active: bool) -> Optional[Worker]:
-
-    db_worker = get_worker(db, worker_id=worker_id)
+async def update_worker_status(db: AsyncSession, worker_id: int, is_active: bool) -> Optional[Worker]:
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
         db_worker.is_active = is_active
-        db.commit()
-        db.refresh(db_worker)
+        await db.commit()
+        await db.refresh(db_worker)
     return db_worker
 
-def delete_worker(db: Session, worker_id: int) -> bool:
 
-    db_worker = get_worker(db, worker_id)
+async def delete_worker(db: AsyncSession, worker_id: int) -> bool:
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
-        db.delete(db_worker)
-        db.commit()
+        await db.delete(db_worker)
+        await db.commit()
         return True
     return False
 
 
-def deactivate_worker(db: Session, worker_id: int) -> Optional[Worker]:
-
-    db_worker = get_worker(db, worker_id)
+async def deactivate_worker(db: AsyncSession, worker_id: int) -> Optional[Worker]:
+    db_worker = await get_worker(db, worker_id)
     if db_worker:
         db_worker.is_active = False
-        db.commit()
-        db.refresh(db_worker)
+        await db.commit()
+        await db.refresh(db_worker)
     return db_worker
 
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-
     # Yer radiusi (km)
     R = 6371.0
 
@@ -222,14 +154,13 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return distance
 
 
-def search_workers(
-        db: Session,
+async def search_workers(
+        db: AsyncSession,
         search_params: WorkerSearchParams,
         skip: int = 0,
         limit: int = 100
 ) -> List[Worker]:
-
-    query = db.query(Worker).filter(Worker.is_active == True)
+    query = select(Worker).filter(Worker.is_active == True)
 
     # Ko'nikmalar bo'yicha filtrlash
     if search_params.skills:
@@ -268,7 +199,8 @@ def search_workers(
 
     # Lokatsiya bo'yicha filtrlash
     # Agar lokatsiya va masofa berilgan bo'lsa, Python kodida filtrlash kerak
-    workers = query.offset(skip).limit(limit).all()
+    result = await db.execute(query)
+    workers = result.scalars().all()
 
     if search_params.location and search_params.distance:
         try:
@@ -302,31 +234,37 @@ def search_workers(
     return workers
 
 
-def get_worker_statistics(db: Session) -> Dict[str, Any]:
-
+async def get_worker_statistics(db: AsyncSession) -> Dict[str, Any]:
     # Umumiy ishchilar soni
-    total_workers = db.query(Worker).count()
+    total_workers = await db.execute(select(func.count(Worker.id)))
+    total_workers = total_workers.scalar()
 
     # Faol ishchilar soni
-    active_workers = db.query(Worker).filter(Worker.is_active == True).count()
+    active_workers = await db.execute(select(func.count(Worker.id)).filter(Worker.is_active == True))
+    active_workers = active_workers.scalar()
 
     # O'rtacha reyting
-    average_rating = db.query(func.avg(Feedback.rate)).scalar() or 0
+    average_rating = await db.execute(select(func.avg(Feedback.rate)))
+    average_rating = average_rating.scalar() or 0
 
     # To'lov turi bo'yicha taqsimlash
     payment_distribution = {}
-    payment_counts = db.query(
-        Worker.payment_type, func.count(Worker.id)
-    ).group_by(Worker.payment_type).all()
+    payment_counts = await db.execute(
+        select(Worker.payment_type, func.count(Worker.id))
+        .group_by(Worker.payment_type)
+    )
+    payment_counts = payment_counts.all()
 
     for payment_type, count in payment_counts:
         payment_distribution[payment_type or "Unknown"] = count
 
     # Jins bo'yicha taqsimlash
     gender_distribution = {}
-    gender_counts = db.query(
-        Worker.gender, func.count(Worker.id)
-    ).group_by(Worker.gender).all()
+    gender_counts = await db.execute(
+        select(Worker.gender, func.count(Worker.id))
+        .group_by(Worker.gender)
+    )
+    gender_counts = gender_counts.all()
 
     for gender, count in gender_counts:
         gender_distribution[gender or "Unknown"] = count

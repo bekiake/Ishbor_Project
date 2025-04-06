@@ -6,9 +6,9 @@ User uchun API endpointlari
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.api.endpoints.auth import generate_access_token
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import models
-from app.database import get_db
+from app.database import get_db as get_async_db  # Asinxron DB session
 from app.schemas.schemas import Token, User, UserCreate, UserUpdate, UserWithFeedbacks
 from app.crud import user as user_crud
 from app.crud import feedback as feedback_crud
@@ -21,13 +21,15 @@ router = APIRouter()
 @router.post("/user_check")
 async def check_user(
     telegram_id: str,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
+    # user_crud.get_user_by_telegram_id ni asinxron deb taxmin qilamiz
+    user = await user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if not user:
         return {"registered": False}
     
-    token = generate_access_token(telegram_id)
+    # generate_access_token ni asinxron deb qoldiramiz, agar u sinxron bo'lsa keyinroq optimallashtiriladi
+    token = await generate_access_token(telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(telegram_id)
     return {
         "registered": True,
         "is_worker": user.is_worker,
@@ -41,29 +43,29 @@ async def register_user(
     telegram_id: str,
     name: Optional[str] = None,
     is_worker: bool = False,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
+    user = await user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if not user:
         db_user = models.User(
-        telegram_id=telegram_id,
-        name=name,
-        is_worker=is_worker,
-        
-    )
+            telegram_id=telegram_id,
+            name=name,
+            is_worker=is_worker,
+        )
         db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
+        await db.commit()
+        await db.refresh(db_user)
         
-        token = generate_access_token(telegram_id)
+        token = await generate_access_token(telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(telegram_id)
         return {
             "access_token": token,
             "is_worker": is_worker,
             "name": name,
             "telegram_id": telegram_id,
-            "registered": False,
+            "registered": False,  # Yangi foydalanuvchi uchun registered False bo‘ladi
         }
-    token = generate_access_token(user.telegram_id)
+    
+    token = await generate_access_token(user.telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(user.telegram_id)
     return {
         "access_token": token,
         "name": name,

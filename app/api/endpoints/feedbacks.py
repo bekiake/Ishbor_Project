@@ -1,14 +1,9 @@
-"""
-Feedback API endpointlari
-
-Feedback uchun API endpointlari
-"""
 import datetime
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
+from app.database import get_db as get_async_db  # Asinxron DB session
 from app.schemas.schemas import Feedback, FeedbackCreate, FeedbackUpdate, Feedbackss
 from app.crud import feedback as feedback_crud
 from app.crud import worker as worker_crud
@@ -21,15 +16,15 @@ router = APIRouter()
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     worker_id: int,
-    text: str = Query(..., min_length=1, max_length=500),  # Fikr matni 1 dan 500 ta belgigacha bo'lishi kerak
-    rate: int = Query(..., ge=1, le=5),  # Rate 1 dan 5 gacha bo'lishi kerak
-    db: Session = Depends(get_db),
+    text: str = Query(..., min_length=1, max_length=500),  # Fikr matni 1 dan 500 ta belgigacha
+    rate: int = Query(..., ge=1, le=5),  # Rate 1 dan 5 gacha
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
-    user_id = current_user.id  # Hozirgi autentifikatsiyalangan foydalanuvchining ID sini olish
+    user_id = current_user.id  # Hozirgi autentifikatsiyalangan foydalanuvchining ID si
 
     # Worker mavjudligini tekshirish
-    worker = worker_crud.get_worker(db, worker_id=worker_id)
+    worker = await worker_crud.get_worker(db, worker_id=worker_id)
     if worker is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -39,13 +34,13 @@ async def create_feedback(
     # Feedback yaratish
     db_feedback = models.Feedback(
         worker_id=worker_id,
-        user_id=user_id,  # Foydalanuvchi ID sini qo'shish
+        user_id=user_id,
         rate=rate,
         text=text
     )
     db.add(db_feedback)
-    db.commit()
-    db.refresh(db_feedback)  # Yaratilgan feedbackni yangilash
+    await db.commit()
+    await db.refresh(db_feedback)  # Yaratilgan feedbackni yangilash
     return {
         "status": "success",
         "worker_id": worker_id,
@@ -55,16 +50,13 @@ async def create_feedback(
         "text": text
     }
 
-
-
-
 @router.delete("/{feedback_id}", status_code=status.HTTP_200_OK)
 async def delete_feedback(
-        feedback_id: int,
-        db: Session = Depends(get_db),
-        current_user: models.User = Depends(get_current_active_user),
+    feedback_id: int = Path(..., description="O'chiriladigan feedback ID si"),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: models.User = Depends(get_current_active_user),
 ) -> dict:
-    feedback = feedback_crud.get_feedback(db, feedback_id=feedback_id)
+    feedback = await feedback_crud.get_feedback(db, feedback_id=feedback_id)
     if feedback is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -78,7 +70,7 @@ async def delete_feedback(
             detail="Bu fikrni o'chirish huquqingiz yo'q"
         )
 
-    success = feedback_crud.delete_feedback(db=db, feedback_id=feedback_id)
+    success = await feedback_crud.delete_feedback(db=db, feedback_id=feedback_id)
 
     if success:
         return {"status": "success", "message": "Fikr muvaffaqiyatli o'chirildi", "id": feedback_id}

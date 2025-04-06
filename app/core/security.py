@@ -1,15 +1,10 @@
-"""
-Authentication va security
-
-JWT token yaratish va tekshirish uchun funksiyalar
-"""
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.settings import settings
 from app.database import get_db
 from app.crud import user as user_crud
@@ -59,10 +54,9 @@ def verify_token(token: str) -> Optional[str]:
 
 
 async def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
 ):
-    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -74,14 +68,12 @@ async def get_current_user(
     if telegram_id is None:
         raise credentials_exception
 
-    # Foydalanuvchini topish
-    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
+    # Foydalanuvchini topish (asynchronous)
+    user = await user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if user is None:
         raise credentials_exception
 
-    # Foydalanuvchi faol emasligini tekshirish
     return user
-
 
 async def get_current_active_user(current_user=Depends(get_current_user)):
 
