@@ -24,7 +24,7 @@ from app.crud import user as user_crud
 
 from app.core.security import get_current_active_user
 from app.core.settings import settings
-from app.models.models import User
+from app.models import models
 
 router = APIRouter()
 
@@ -43,7 +43,7 @@ async def read_workers(
 
 @router.get("/me", response_model = dict)
 async def read_worker_me(
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
         db: Session = Depends(get_db)
 ):
     
@@ -89,7 +89,7 @@ async def create_worker_with_image(
         location: Optional[str] = Form(None),
         image: Optional[UploadFile] = File(None),
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
    
     # Avval ishchi mavjudligini tekshirish
@@ -193,12 +193,12 @@ async def search_workers(
 @router.get("/{worker_id}")
 def get_worker_detail(worker_id: int, db: Session = Depends(get_db)):
     
-    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    worker = db.query(models.Worker).filter(models.Worker.id == worker_id).first()
     
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
     
-    feedbacks = db.query(Feedback).filter(Feedback.worker_id == worker_id).all()
+    feedbacks = db.query(models.Feedback).filter(models.Feedback.worker_id == worker_id).all()
     feedbacks_data = [
         {
             "id": feedback.id,
@@ -249,7 +249,7 @@ async def update_worker(
         image: Optional[UploadFile] = File(None),
         is_active: Optional[bool] = Form(None),
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
     """
     Ishchi ma'lumotlarini va rasmini yangilash
@@ -341,7 +341,7 @@ async def toggle_worker_status(
         worker_id: int,
         is_active: bool = Body(..., embed = True),
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
 ) -> dict:
     worker = worker_crud.get_worker(db, worker_id = worker_id)
     if worker is None:
@@ -375,7 +375,7 @@ async def toggle_worker_status(
 async def delete_worker(
         worker_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: models.User = Depends(get_current_active_user),
 ) -> dict:  # Dict qaytaradi
     """
     Ishchini o'chirish
