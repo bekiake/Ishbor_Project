@@ -28,10 +28,6 @@ Base = declarative_base()
 
 # Database session dependency (FastAPI endpointlar uchun)
 def get_db():
-    """
-    FastAPI dependency sifatida ishlatiladi. Endpoint funksiyalariga
-    ma'lumotlar bazasi sessiyasini taqdim etadi.
-    """
     db = SessionLocal()
     try:
         yield db

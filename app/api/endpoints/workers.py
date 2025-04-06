@@ -36,11 +36,7 @@ async def read_workers(
         is_active: bool = Query(True, description = "Faqat faol ishchilarni qaytarish"),
         db: Session = Depends(get_db),
 ) -> Any:
-    """
-    Ishchilar ro'yxatini olish
-
-    Har bir ishchi haqida asosiy ma'lumotlarni qaytaradi
-    """
+    
     workers = worker_crud.get_workers(db, skip = skip, limit = limit, is_active = is_active)
     return workers
 
@@ -199,11 +195,6 @@ async def read_worker(
         worker_id: int = Path(..., description = "Ishchi ID si"),
         db: Session = Depends(get_db),
 ) -> Any:
-    """
-    Ishchi ma'lumotlarini olish
-
-    Berilgan ID bo'yicha ishchi ma'lumotlarini va uning haqidagi fikrlarni qaytaradi
-    """
     worker = worker_crud.get_worker(db, worker_id = worker_id)
     if worker is None:
         raise HTTPException(
@@ -211,7 +202,7 @@ async def read_worker(
             detail = "Ishchi topilmadi"
         )
 
-    # Fikrlarni olish
+    
     feedbacks = feedback_crud.get_worker_feedbacks(db, worker_id = worker_id)
     if feedbacks is None:
         return worker
@@ -225,7 +216,7 @@ async def read_worker(
         
         worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
         worker_with_feedbacks.feedbacks = feedbacks
-        worker_with_feedbacks.worker_name = worker_name
+
         
         return worker_with_feedbacks
 
