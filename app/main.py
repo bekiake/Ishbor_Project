@@ -19,9 +19,6 @@ from app.core.settings import settings
 from app.database import Base, engine
 from app.core.middleware import LogMiddleware
 
-
-Base.metadata.create_all(bind=engine)
-
 # FastAPI ilovasini yaratish
 app = FastAPI(
     title="Ishbor API",
@@ -31,10 +28,15 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json"
 )
 
-# Routerlarni qo‘shish
-# app.include_router(auth.router, prefix=settings.API_V1_STR)
-# app.include_router(users.router, prefix=settings.API_V1_STR)
+# Jadval yaratish uchun asinxron funksiya
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
+# Startup eventida jadval yaratish
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
 
 def custom_openapi():
     """Custom OpenAPI sxemasi"""
@@ -64,7 +66,6 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return openapi_schema
 
-
 app.openapi = custom_openapi
 
 # CORS middleware
@@ -87,7 +88,6 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 # API routerlarini qo'shish
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-
 @app.get("/")
 async def root():
     """Asosiy sahifa"""
@@ -98,17 +98,6 @@ async def root():
         "docs_url": "/docs",
         "api_url": settings.API_V1_STR,
     }
-
-
-# @app.get("/health")
-# async def health_check():
-#     """Health check endpointi"""
-#     return {
-#         "status": "healthy",
-#         "timestamp": time.time(),
-#         "environment": "production" if not settings.DEBUG else "development",
-#     }
-
 
 if __name__ == "__main__":
     # Agarda to'g'ridan-to'g'ri bu fayl ishga tushirilsa

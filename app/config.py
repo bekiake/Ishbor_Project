@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Muhit o'zgaruvchilarini yuklash
 load_dotenv()
 
-# Loyiha yo'lini topish (BASE_DIR Django-dagi kabi)
+# Loyiha yo'lini topish
 BASE_DIR = Path(__file__).resolve().parent.parent  # Bu 'app/' papkasi bo'ladi
 
 # Xavfsizlik va JWT sozlamalari
@@ -30,18 +30,6 @@ BACKEND_CORS_ORIGINS = [
     "http://localhost:3000",  # React frontendi uchun
     "http://localhost:5173",  # Vite frontendi uchun
 ]
-
-import os
-
-# PostgreSQL uchun konfiguratsiya
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "Lazizbek1")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "baza")
-
-# SQLAlchemy PostgreSQL ulanish URL
-SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Static fayllar va media fayllar uchun sozlamalar
 STATIC_URL = "/static/"
@@ -88,7 +76,7 @@ LOGGING = {
     }
 }
 
-# Papkalarni yaratish (media, uploads, va h.k.)
+# Papkalarni yaratish
 os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(MEDIA_ROOT, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
