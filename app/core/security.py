@@ -25,16 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """
-    JWT token yaratish
-
-    Args:
-        subject: Token uchun sub maydoni (odatda user ID yoki Telegram ID)
-        expires_delta: Token muddati (default: settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-
-    Returns:
-        str: JWT token
-    """
+    
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -49,15 +40,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: Optional[timede
 
 
 def verify_token(token: str) -> Optional[str]:
-    """
-    JWT tokenni tekshirish
-
-    Args:
-        token: JWT token
-
-    Returns:
-        Optional[str]: Sub maydoni (userning Telegram ID si)
-    """
+    
     try:
         # Tokenni dekodlash
         payload = jwt.decode(
@@ -79,21 +62,7 @@ async def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: Session = Depends(get_db)
 ):
-    """
-    Joriy foydalanuvchini aniqlash
-
-    JWT token orqali foydalanuvchini ma'lumotlar bazasidan topadi
-
-    Args:
-        token: JWT token
-        db: Database session
-
-    Returns:
-        User: Foydalanuvchi ma'lumotlari
-
-    Raises:
-        HTTPException: Token noto'g'ri bo'lsa yoki foydalanuvchi topilmasa
-    """
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

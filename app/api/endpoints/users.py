@@ -36,8 +36,8 @@ async def register_user(
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-
-        token = generate_access_token(user.telegram_id)
+        
+        token = generate_access_token(telegram_id)
         return {
             "access_token": token,
             "is_worker": is_worker,
