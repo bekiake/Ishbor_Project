@@ -21,7 +21,7 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
-def generate_access_token(telegram_id: str) -> dict:
+async def generate_access_token(telegram_id: str) -> dict:
     """JWT token yaratish"""
     access_token = create_access_token(subject=telegram_id)
     return {"access_token": access_token, "token_type": "bearer"}
