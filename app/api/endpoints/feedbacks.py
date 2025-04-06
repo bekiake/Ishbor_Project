@@ -41,8 +41,8 @@ async def create_feedback(
         user_id=user_id,  # Foydalanuvchi ID sini qo'shish
         rate=rate,
         text=text,
-        create_at=datetime.utcnow(),  # Yaratilish sanasini o'rnatish
-        update_at=datetime.utcnow(),  # Yangilanish sanasini o'rnatish
+        create_at=datetime.datetime.utcnow(),  # Yaratilish sanasini o'rnatish
+        update_at=datetime.datetime.utcnow(),  # Yangilanish sanasini o'rnatish
         user_name=current_user.name,  # Agar kerak bo'lsa, foydalanuvchi nomini qo'shish
     )
     db.add(db_feedback)
