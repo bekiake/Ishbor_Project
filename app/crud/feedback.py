@@ -4,7 +4,7 @@ Feedback CRUD operatsiyalari
 Feedback modeli uchun CRUD (Create, Read, Update, Delete) operatsiyalari
 """
 from typing import List, Optional, Dict, Any, Tuple
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func
 
 from app.models.models import Feedback, Worker, User
@@ -24,14 +24,27 @@ def get_feedback(db: Session, feedback_id: int) -> Optional[Feedback]:
     """
     return db.query(Feedback).filter(Feedback.id == feedback_id).first()
 
-
 def get_worker_feedbacks(
-    db: Session, worker_id: int, skip: int = 0, limit: int = 100, is_active: bool = True
-) -> List[Feedback]:
-    
-    query = db.query(Feedback).filter(Feedback.worker_id == worker_id)
+    db: Session, worker_id: int, skip: int = 0, limit: int = 100
+):
+    UserAlias = aliased(User)
 
-    return query.order_by(Feedback.create_at.desc()).offset(skip).limit(limit).all()
+    results = (
+        db.query(Feedback, func.coalesce(UserAlias.name, UserAlias.telegram_id).label("user_name"))
+        .join(UserAlias, Feedback.user_id == UserAlias.id)
+        .filter(Feedback.worker_id == worker_id)
+        .order_by(Feedback.create_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    feedbacks_with_name = []
+    for feedback, user_name in results:
+        feedback.user_name = user_name  # dinamik atribut
+        feedbacks_with_name.append(feedback)
+
+    return feedbacks_with_name
 
 
 def get_user_feedbacks(

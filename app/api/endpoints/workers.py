@@ -16,7 +16,7 @@ from ...core.security import get_current_user
 from app.database import get_db
 from app.schemas.schemas import (
     Worker, WorkerCreate, WorkerUpdate, WorkerWithFeedbacks,
-    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats
+    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats, FeedbackOut
 )
 from app.crud import worker as worker_crud
 from app.crud import feedback as feedback_crud
@@ -190,36 +190,12 @@ async def search_workers(
     return workers
 
 
-@router.get("/{worker_id}", response_model = WorkerWithFeedbacks)
-async def read_worker(
-        worker_id: int = Path(..., description = "Ishchi ID si"),
-        db: Session = Depends(get_db),
-) -> Any:
-    worker = worker_crud.get_worker(db, worker_id = worker_id)
-    if worker is None:
-        raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
-            detail = "Ishchi topilmadi"
-        )
-
-    
-    feedbacks = feedback_crud.get_worker_feedbacks(db, worker_id = worker_id)
-    if feedbacks is None:
-        return worker
-
-    else:
-        worker_name = worker_crud.get_worker(db, worker_id = worker_id).name
-        
-        for feedback in feedbacks:
-            feedback_user_name = user_crud.get_user(db, user_id = feedback.user_id).name
-            
-        
-        worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
-        worker_with_feedbacks.feedbacks = feedbacks
-        
-        
-        return worker_with_feedbacks
-
+@router.get("/{worker_id}", response_model=List[FeedbackOut])
+def get_feedbacks_for_worker(worker_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    feedbacks = crud.get_worker_feedbacks(db, worker_id=worker_id, skip=skip, limit=limit)
+    if not feedbacks:
+        raise HTTPException(status_code=404, detail="Feedbacks not found for this worker")
+    return feedbacks
 
 @router.put("/{worker_id}", response_model = Worker)
 async def update_worker(

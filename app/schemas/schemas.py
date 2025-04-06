@@ -230,3 +230,15 @@ class SystemStats(BaseModel):
     average_rating: float
     top_skills: List[Dict[str, Any]]
     top_languages: List[Dict[str, Any]]
+    
+    
+
+class FeedbackOut(BaseModel):
+    id: int
+    rate: int
+    text: Optional[str]
+    create_at: datetime
+    user_name: Optional[str]  # Bu qo‘shilgan maydon
+
+    class Config:
+        orm_mode = True
