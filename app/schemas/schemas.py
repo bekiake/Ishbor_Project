@@ -155,14 +155,14 @@ class FeedbackCreate(BaseModel):
     
 
 class FeedbackResponse(BaseModel):
-    feedback_id: int
-    user_name: str
-    rate: int
-    text: Optional[str] = None
-    create_at: datetime
+    # Define fields that correspond to the Feedback model's attributes
+    id: int
+    text: str
+    rating: int
 
     class Config:
-        orm_mode = True 
+        orm_mode = True
+        
 
 class FeedbackUpdate(BaseModel):
     """Feedback yangilash uchun schema"""
@@ -271,7 +271,7 @@ class WorkerDetail(BaseModel):
     created_at: datetime
     updated_at: datetime
     is_active: bool
-    feedbacks: List[FeedbackOut]
+    feedbacks: List[FeedbackResponse]
 
     class Config:
         orm_mode = True

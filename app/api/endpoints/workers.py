@@ -192,12 +192,9 @@ async def search_workers(
 
 @router.get("/{worker_id}", response_model=WorkerDetail)
 def get_worker_detail(worker_id: int, db: Session = Depends(get_db)):
-    # Worker va unga yozilgan feedbacklarni olish
     worker = feedback_crud.get_worker_with_feedbacks(db, worker_id)
-
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
-    
     return worker
 
 @router.put("/{worker_id}", response_model = Worker)
