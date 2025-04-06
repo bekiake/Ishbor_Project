@@ -161,28 +161,24 @@ async def search_workers(
     )
     return workers
 
+
 @router.get("/{worker_id}")
 async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
-    # Define the statement (query) to retrieve the worker
     stmt = select(models.Worker).filter(models.Worker.id == worker_id)
     
-    # Execute the query and await the result
-    result = await db.execute(stmt)
+    # So'rovni bajarish va natijani olish
+    result = await db.execute(stmt)  # So'rovni kutish
+    workers = await result.scalar_one_or_none()  # Natijani olish
     
-    # Get the worker or return None if not found
-    worker = await result.scalar_one_or_none()
-    
-    if not worker:
+    if not workers:
         raise HTTPException(status_code=404, detail="Worker not found")
-
-    # Define the statement to fetch feedbacks for this worker
-    stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
-    result = await db.execute(stmt)
     
-    # Fetch all feedbacks
-    feedbacks = await result.scalars().all()
-
-    # Format the feedback data
+    # Feedbacklarni olish
+    stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
+    result = await db.execute(stmt)  # So'rovni kutish
+    feedbacks = await result.scalars().all()  # Feedbacklarni olish
+    
+    # Feedbacklarni formatlash
     feedbacks_data = [
         {
             "id": feedback.id,
@@ -190,27 +186,28 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
             "text": feedback.text,
             "create_at": feedback.create_at,
             "update_at": feedback.update_at,
-            "user_name": feedback.user.name if feedback.user else "Anonymous"  # Ensure feedback.user exists
+            "user_name": feedback.user.name if feedback.user else "Anonymous"
         }
         for feedback in feedbacks
     ]
-
+    
+    # Worker va feedbacklar bilan javob qaytarish
     return {
-        "id": worker.id,
-        "telegram_id": worker.telegram_id,
-        "name": worker.name,
-        "image": worker.image,
-        "age": worker.age,
-        "phone": worker.phone,
-        "gender": worker.gender,
-        "payment_type": worker.payment_type,
-        "daily_payment": worker.daily_payment,
-        "languages": worker.languages,
-        "skills": worker.skills,
-        "location": worker.location,
-        "is_active": worker.is_active,
-        "created_at": worker.created_at,
-        "updated_at": worker.updated_at,
+        "id": workers.id,
+        "telegram_id": workers.telegram_id,
+        "name": workers.name,
+        "image": workers.image,
+        "age": workers.age,
+        "phone": workers.phone,
+        "gender": workers.gender,
+        "payment_type": workers.payment_type,
+        "daily_payment": workers.daily_payment,
+        "languages": workers.languages,
+        "skills": workers.skills,
+        "location": workers.location,
+        "is_active": workers.is_active,
+        "created_at": workers.created_at,
+        "updated_at": workers.updated_at,
         "feedbacks": feedbacks_data if feedbacks else None
     }
 
