@@ -11,41 +11,29 @@ from app.models.models import Feedback, Worker, User
 from app.schemas.schemas import FeedbackCreate, FeedbackUpdate
 
 
-def get_feedback(db: Session, feedback_id: int) -> Optional[Feedback]:
-    """
-    ID bo'yicha fikrni olish
+def get_worker_with_feedbacks(db: Session, worker_id: int) -> Optional[Worker]:
+    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    if not worker:
+        return None
 
-    Args:
-        db: Database session
-        feedback_id: Fikr ID si
-
-    Returns:
-        Optional[Feedback]: Fikr ma'lumotlari yoki None
-    """
-    return db.query(Feedback).filter(Feedback.id == feedback_id).first()
-
-def get_worker_feedbacks(
-    db: Session, worker_id: int, skip: int = 0, limit: int = 100
-):
     UserAlias = aliased(User)
 
-    results = (
+    feedbacks = (
         db.query(Feedback, func.coalesce(UserAlias.name, UserAlias.telegram_id).label("user_name"))
         .join(UserAlias, Feedback.user_id == UserAlias.id)
         .filter(Feedback.worker_id == worker_id)
         .order_by(Feedback.create_at.desc())
-        .offset(skip)
-        .limit(limit)
         .all()
     )
 
-    feedbacks_with_name = []
-    for feedback, user_name in results:
-        feedback.user_name = user_name  # dinamik atribut
-        feedbacks_with_name.append(feedback)
+    feedback_list = []
+    for fb, user_name in feedbacks:
+        fb.user_name = user_name
+        feedback_list.append(fb)
 
-    return feedbacks_with_name
+    worker.feedbacks = feedback_list  # dinamically qo‘shilyapti
 
+    return worker
 
 def get_user_feedbacks(
     db: Session, user_id: int, skip: int = 0, limit: int = 100, is_active: bool = True

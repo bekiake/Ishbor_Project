@@ -88,7 +88,7 @@ class WorkerInDBBase(WorkerBase):
         from_attributes = True  # SQLAlchemy modellardan ma'lumotlarni olish uchun
 
 
-# app/schemas/schemas.py faylidagi Worker klassida
+
 class Worker(WorkerInDBBase):
     """Worker response schema"""
     languages_list: Optional[List[str]] = None
@@ -239,6 +239,28 @@ class FeedbackOut(BaseModel):
     text: Optional[str]
     create_at: datetime
     user_name: Optional[str]  # Bu qo‘shilgan maydon
+
+    class Config:
+        orm_mode = True
+        
+
+class WorkerDetail(BaseModel):
+    id: int
+    telegram_id: str
+    name: Optional[str]
+    image: Optional[str]
+    age: Optional[int]
+    phone: Optional[str]
+    gender: Optional[str]
+    payment_type: Optional[str]
+    daily_payment: Optional[int]
+    languages: Optional[str]
+    skills: Optional[str]
+    location: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    is_active: bool
+    feedbacks: List[FeedbackOut]
 
     class Config:
         orm_mode = True

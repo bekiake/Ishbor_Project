@@ -16,7 +16,7 @@ from ...core.security import get_current_user
 from app.database import get_db
 from app.schemas.schemas import (
     Worker, WorkerCreate, WorkerUpdate, WorkerWithFeedbacks,
-    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats, FeedbackOut
+    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats, WorkerDetail
 )
 from app.crud import worker as worker_crud
 from app.crud import feedback as feedback_crud
@@ -190,12 +190,13 @@ async def search_workers(
     return workers
 
 
-@router.get("/{worker_id}", response_model=List[FeedbackOut])
-def get_feedbacks_for_worker(worker_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    feedbacks = feedback_crud.get_worker_feedbacks(db, worker_id=worker_id, skip=skip, limit=limit)
-    if not feedbacks:
-        raise HTTPException(status_code=404, detail="Feedbacks not found for this worker")
-    return feedbacks
+@router.get("/{worker_id}", response_model=List[WorkerDetail])
+def get_worker_detail(worker_id: int, db: Session = Depends(get_db)):
+    worker = feedback_crud.get_worker_with_feedbacks(db, worker_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail="Worker not found")
+    return worker
+
 
 @router.put("/{worker_id}", response_model = Worker)
 async def update_worker(
