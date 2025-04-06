@@ -192,7 +192,7 @@ async def search_workers(
 
 @router.get("/{worker_id}", response_model=List[FeedbackOut])
 def get_feedbacks_for_worker(worker_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    feedbacks = crud.get_worker_feedbacks(db, worker_id=worker_id, skip=skip, limit=limit)
+    feedbacks = feedback_crud.get_worker_feedbacks(db, worker_id=worker_id, skip=skip, limit=limit)
     if not feedbacks:
         raise HTTPException(status_code=404, detail="Feedbacks not found for this worker")
     return feedbacks
