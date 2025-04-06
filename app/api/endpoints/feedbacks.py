@@ -42,7 +42,7 @@ async def create_feedback(
         )
 
     # Fikr yaratish
-    return feedback_crud.create_feedback(db=db, feedback=feedback_in)
+    return feedback_crud.create_feedback(db=db, user_id=user_id,feedback=feedback_in)
 
 
 

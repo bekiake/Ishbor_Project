@@ -100,7 +100,7 @@ def get_recent_feedbacks(
     return query.order_by(Feedback.create_at.desc()).offset(skip).limit(limit).all()
 
 
-def create_feedback(db: Session, feedback: FeedbackCreate) -> Feedback:
+def create_feedback(db: Session, user_id: int,feedback: FeedbackCreate) -> Feedback:
     """
     Yangi fikr yaratish
 
@@ -113,7 +113,7 @@ def create_feedback(db: Session, feedback: FeedbackCreate) -> Feedback:
     """
     db_feedback = Feedback(
         worker_id=feedback.worker_id,
-        user_id=feedback.user_id,
+        user_id=user_id,
         rate=feedback.rate,
         text=feedback.text,
     )
