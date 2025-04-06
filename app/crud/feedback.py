@@ -102,16 +102,7 @@ def get_recent_feedbacks(
 
 
 def create_feedback(db: Session, user_id: int,feedback: FeedbackCreate) -> Feedback:
-    """
-    Yangi fikr yaratish
-
-    Args:
-        db: Database session
-        feedback: Fikr ma'lumotlari
-
-    Returns:
-        Feedback: Yaratilgan fikr
-    """
+    
     db_feedback = Feedback(
         worker_id=feedback.worker_id,
         user_id=user_id,

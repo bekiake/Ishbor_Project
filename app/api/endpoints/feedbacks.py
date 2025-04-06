@@ -24,7 +24,8 @@ async def create_feedback(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    user_id = current_user.id
+    user_id = current_user.id  # Auth orqali user_id olinadi
+
     # Ishchi mavjudligini tekshirish
     worker = worker_crud.get_worker(db, worker_id=feedback_in.worker_id)
     if worker is None:
@@ -42,7 +43,7 @@ async def create_feedback(
         )
 
     # Fikr yaratish
-    return feedback_crud.create_feedback(db=db, user_id=user_id,feedback=feedback_in)
+    return feedback_crud.create_feedback(db=db, user_id=user_id, feedback=feedback_in)
 
 
 

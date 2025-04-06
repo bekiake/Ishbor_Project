@@ -148,10 +148,13 @@ class FeedbackBase(BaseModel):
     text: Optional[str] = None
 
 
-class FeedbackCreate(FeedbackBase):
-    """Feedback yaratish uchun schema"""
-    pass
+class FeedbackCreate(BaseModel):
+    worker_id: int  # Ishchi id
+    rate: int       # Baho
+    text: str       # Fikr matni
 
+    class Config:
+        orm_mode = True
 
 class FeedbackUpdate(BaseModel):
     """Feedback yangilash uchun schema"""
