@@ -7,7 +7,7 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.api.endpoints.auth import generate_access_token
 from sqlalchemy.orm import Session
-
+from app.models import models
 from app.database import get_db
 from app.schemas.schemas import Token, User, UserCreate, UserUpdate, UserWithFeedbacks
 from app.crud import user as user_crud
@@ -27,10 +27,11 @@ async def register_user(
 ) -> Any:
     user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
     if not user:
-        db_user = User(
+        db_user = models.User(
         telegram_id=telegram_id,
         name=name,
         is_worker=is_worker,
+        
     )
         db.add(db_user)
         db.commit()
