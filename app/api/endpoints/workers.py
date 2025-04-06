@@ -190,7 +190,7 @@ async def search_workers(
     return workers
 
 
-@router.get("/{worker_id}", response_model=List[WorkerDetail])
+@router.get("/{worker_id}", response_model=WorkerDetail)
 def get_worker_detail(worker_id: int, db: Session = Depends(get_db)):
     worker = feedback_crud.get_worker_with_feedbacks(db, worker_id)
     if not worker:
