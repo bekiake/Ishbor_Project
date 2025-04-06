@@ -161,20 +161,22 @@ async def search_workers(
     )
     return workers
 
+
 @router.get("/{worker_id}")
 async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
-    
-    worker = await db.execute(
-        select(models.Worker).filter(models.Worker.id == worker_id)
-    ).scalar_one_or_none()
-    
+    # Fetching worker details
+    stmt = select(models.Worker).filter(models.Worker.id == worker_id)
+    result = await db.execute(stmt)  # Await the result of execute
+    worker = await result.scalar_one_or_none()  # Now this works
+
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
-    
-    feedbacks = await db.execute(
-        select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
-    ).scalars().all()
-    
+
+    # Fetching feedbacks associated with the worker
+    stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
+    result = await db.execute(stmt)  # Await the result of execute
+    feedbacks = await result.scalars().all()  # Await the scalars
+
     feedbacks_data = [
         {
             "id": feedback.id,
@@ -182,11 +184,11 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
             "text": feedback.text,
             "create_at": feedback.create_at,
             "update_at": feedback.update_at,
-            "user_name": feedback.user.name
+            "user_name": feedback.user.name if feedback.user else "Anonymous"  # Ensure feedback.user exists
         }
         for feedback in feedbacks
     ]
-    
+
     return {
         "id": worker.id,
         "telegram_id": worker.telegram_id,
@@ -205,6 +207,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
         "updated_at": worker.updated_at,
         "feedbacks": feedbacks_data if feedbacks else None
     }
+
 
 @router.put("/{worker_id}", response_model=Worker)
 async def update_worker(
