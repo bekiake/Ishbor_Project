@@ -216,7 +216,7 @@ async def read_worker(
         
         worker_with_feedbacks = WorkerWithFeedbacks.from_orm(worker)
         worker_with_feedbacks.feedbacks = feedbacks
-
+        
         
         return worker_with_feedbacks
 

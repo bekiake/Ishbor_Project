@@ -5,6 +5,7 @@ from app.models.models import User
 from app.schemas.schemas import UserCreate, UserUpdate
 
 
+
 def get_user(db: Session, user_id: int) -> Optional[User]:
 
     return db.query(User).filter(User.id == user_id).first()

@@ -16,7 +16,21 @@ from app.core.security import get_current_active_user
 
 router = APIRouter()
 
-
+@router.post("/user_check")
+async def check_user(
+    telegram_id: str,
+    db: Session = Depends(get_db),
+) -> Any:
+    user = user_crud.get_user_by_telegram_id(db, telegram_id=telegram_id)
+    if not user:
+        return {"registered": False}
+    
+    return {
+        "registered": True,
+        "is_worker": user.is_worker,
+        "name": user.name,
+        "telegram_id": user.telegram_id,
+    }
 
 @router.post("/register")
 async def register_user(
@@ -43,7 +57,7 @@ async def register_user(
             "is_worker": is_worker,
             "name": name,
             "telegram_id": telegram_id,
-            "registered": True,
+            "registered": False,
         }
     token = generate_access_token(user.telegram_id)
     return {
@@ -51,7 +65,7 @@ async def register_user(
         "name": name,
         "telegram_id": telegram_id,
         "is_worker": is_worker,
-        "registered": False,
+        "registered": True,
     }
 
 

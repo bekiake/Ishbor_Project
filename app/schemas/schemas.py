@@ -143,6 +143,7 @@ class Worker(WorkerInDBBase):
 class FeedbackBase(BaseModel):
     """Feedback uchun asosiy ma'lumotlar"""
     worker_id: int
+    user_name: str
     rate: int = Field(1, ge=1, le=5)
     text: Optional[str] = None
 
