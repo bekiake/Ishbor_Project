@@ -17,7 +17,7 @@ from app.models.models import User
 
 router = APIRouter()
 
-@router.post("/", response_model=Feedback, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     feedback_in: FeedbackCreate,
     db: Session = Depends(get_db),
@@ -43,7 +43,13 @@ async def create_feedback(
     db.add(db_feedback)
     db.commit()
     db.refresh(db_feedback)  # Yaratilgan feedbackni yangilash
-    return db_feedback
+    return {
+        "status": "success",
+        "worker_id": feedback_in.worker_id,
+        "user_id": user_id,
+        "rate": feedback_in.rate,
+        "text": feedback_in.text
+    }
 
 
 
