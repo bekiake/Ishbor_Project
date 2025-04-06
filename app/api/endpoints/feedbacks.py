@@ -16,17 +16,18 @@ from app.core.security import get_current_active_user
 from app.models.models import User
 
 router = APIRouter()
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
-    feedback_in: FeedbackCreate,
+    worker_id: int,
+    text: str = Query(..., min_length=1, max_length=500),  # Fikr matni 1 dan 500 ta belgigacha bo'lishi kerak
+    rate: int = Query(..., ge=1, le=5),  # Rate 1 dan 5 gacha bo'lishi kerak
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
     user_id = current_user.id  # Hozirgi autentifikatsiyalangan foydalanuvchining ID sini olish
 
     # Worker mavjudligini tekshirish
-    worker = worker_crud.get_worker(db, worker_id=feedback_in.worker_id)
+    worker = worker_crud.get_worker(db, worker_id=worker_id)
     if worker is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -35,20 +36,20 @@ async def create_feedback(
 
     # Feedback yaratish
     db_feedback = Feedback(
-        worker_id=feedback_in.worker_id,
+        worker_id=worker_id,
         user_id=user_id,  # Foydalanuvchi ID sini qo'shish
-        rate=feedback_in.rate,
-        text=feedback_in.text,
+        rate=rate,
+        text=text,
     )
     db.add(db_feedback)
     db.commit()
     db.refresh(db_feedback)  # Yaratilgan feedbackni yangilash
     return {
         "status": "success",
-        "worker_id": feedback_in.worker_id,
+        "worker_id": worker_id,
         "user_id": user_id,
-        "rate": feedback_in.rate,
-        "text": feedback_in.text
+        "rate": rate,
+        "text": text
     }
 
 
