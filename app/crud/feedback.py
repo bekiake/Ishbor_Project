@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func
 
 from app.models.models import Feedback, Worker, User
-from app.schemas.schemas import FeedbackCreate, FeedbackUpdate
-
+from app.schemas.schemas import FeedbackCreate, FeedbackResponse, FeedbackUpdate
 
 def get_worker_with_feedbacks(db: Session, worker_id: int) -> Optional[Worker]:
     worker = db.query(Worker).filter(Worker.id == worker_id).first()
@@ -18,39 +17,41 @@ def get_worker_with_feedbacks(db: Session, worker_id: int) -> Optional[Worker]:
 
     UserAlias = aliased(User)
 
+    # Faqat kerakli maydonlarni tanlash (feedback_id, user_name, rate, text, create_at)
     feedbacks = (
-        db.query(Feedback, func.coalesce(UserAlias.name, UserAlias.telegram_id).label("user_name"))
-        .join(UserAlias, Feedback.user_id == UserAlias.id)
-        .filter(Feedback.worker_id == worker_id)
-        .order_by(Feedback.create_at.desc())
+        db.query(
+            Feedback.id.label("feedback_id"),
+            UserAlias.name.label("user_name"),
+            Feedback.rate,
+            Feedback.text,
+            Feedback.create_at,
+        )
+        .join(UserAlias, Feedback.user_id == UserAlias.id)  # User bilan join qilish
+        .filter(Feedback.worker_id == worker_id)  # Worker_id bo'yicha filterlash
+        .order_by(Feedback.create_at.desc())  # Yangi feedbacklar birinchi bo'lsin
         .all()
     )
 
+    # Feedbacklar ro'yxatini yaratish
     feedback_list = []
-    for fb, user_name in feedbacks:
-        fb.user_name = user_name
-        feedback_list.append(fb)
+    for feedback in feedbacks:
+        feedback_data = FeedbackResponse(
+            feedback_id=feedback.feedback_id,
+            user_name=feedback.user_name,
+            rate=feedback.rate,
+            text=feedback.text,
+            create_at=feedback.create_at,
+        )
+        feedback_list.append(feedback_data)
 
-    worker.feedbacks = feedback_list  # dinamically qo‘shilyapti
+    worker.feedbacks = feedback_list  # Feedbacklarni ishchiga dinamik ravishda qo'shish
 
     return worker
 
 def get_user_feedbacks(
     db: Session, user_id: int, skip: int = 0, limit: int = 100, is_active: bool = True
 ) -> List[Feedback]:
-    """
-    Foydalanuvchi qoldirgan fikrlarni olish
-
-    Args:
-        db: Database session
-        user_id: Foydalanuvchi ID si
-        skip: O'tkazib yuborish uchun ma'lumotlar soni
-        limit: Qaytariladigan ma'lumotlar soni
-        is_active: Faqat faol fikrlarni qaytarish
-
-    Returns:
-        List[Feedback]: Fikrlar ro'yxati
-    """
+    
     query = db.query(Feedback).filter(Feedback.user_id == user_id)
 
     if is_active:
@@ -60,16 +61,7 @@ def get_user_feedbacks(
 
 
 def get_worker_average_rating(db: Session, worker_id: int) -> float:
-    """
-    Ishchining o'rtacha reytingini olish
-
-    Args:
-        db: Database session
-        worker_id: Ishchi ID si
-
-    Returns:
-        float: O'rtacha reyting
-    """
+    
     result = db.query(func.avg(Feedback.rate).label("average_rating")).filter(
         Feedback.worker_id == worker_id,
         Feedback.is_active == True
@@ -81,18 +73,7 @@ def get_worker_average_rating(db: Session, worker_id: int) -> float:
 def get_recent_feedbacks(
     db: Session, skip: int = 0, limit: int = 10, is_active: bool = True
 ) -> List[Feedback]:
-    """
-    Eng so'nggi fikrlarni olish
-
-    Args:
-        db: Database session
-        skip: O'tkazib yuborish uchun ma'lumotlar soni
-        limit: Qaytariladigan ma'lumotlar soni
-        is_active: Faqat faol fikrlarni qaytarish
-
-    Returns:
-        List[Feedback]: Fikrlar ro'yxati
-    """
+    
     query = db.query(Feedback)
 
     if is_active:
@@ -115,28 +96,6 @@ def create_feedback(db: Session, user_id: int,feedback: FeedbackCreate) -> Feedb
     return db_feedback
 
 
-def update_feedback(
-    db: Session, feedback_id: int, feedback_update: FeedbackUpdate
-) -> Optional[Feedback]:
-    """
-    Fikr ma'lumotlarini yangilash
-
-    Args:
-        db: Database session
-        feedback_id: Fikr ID si
-        feedback_update: Yangilanayotgan ma'lumotlar
-
-    Returns:
-        Optional[Feedback]: Yangilangan fikr ma'lumotlari yoki None
-    """
-    db_feedback = get_feedback(db, feedback_id)
-    if db_feedback:
-        update_data = feedback_update.dict(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_feedback, field, value)
-        db.commit()
-        db.refresh(db_feedback)
-    return db_feedback
 
 
 def delete_feedback(db: Session, feedback_id: int) -> bool:

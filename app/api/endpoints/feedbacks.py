@@ -17,16 +17,15 @@ from app.models.models import User
 
 router = APIRouter()
 
-
 @router.post("/", response_model=Feedback, status_code=status.HTTP_201_CREATED)
 async def create_feedback(
-        feedback_in: FeedbackCreate,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+    feedback_in: FeedbackCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    user_id = current_user.id  # Auth orqali user_id olinadi
+    user_id = current_user.id  # Hozirgi autentifikatsiyalangan foydalanuvchining ID sini olish
 
-    # Ishchi mavjudligini tekshirish
+    # Worker mavjudligini tekshirish
     worker = worker_crud.get_worker(db, worker_id=feedback_in.worker_id)
     if worker is None:
         raise HTTPException(
@@ -34,48 +33,19 @@ async def create_feedback(
             detail="Ishchi topilmadi"
         )
 
-    # Foydalanuvchi mavjudligini tekshirish
-    user = user_crud.get_user(db, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Foydalanuvchi topilmadi"
-        )
-
-    # Fikr yaratish
-    return feedback_crud.create_feedback(db=db, user_id=user_id, feedback=feedback_in)
-
-
-
-@router.put("/{feedback_id}", response_model=Feedback)
-async def update_feedback(
-        feedback_id: int,
-        feedback_in: FeedbackUpdate,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
-) -> Any:
-    """
-    Fikr ma'lumotlarini yangilash
-
-    Berilgan ID bo'yicha fikr ma'lumotlarini yangilaydi
-    """
-    feedback = feedback_crud.get_feedback(db, feedback_id=feedback_id)
-    if feedback is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Fikr topilmadi"
-        )
-
-    # Foydalanuvchi o'zining fikrini o'zgartirishi kerak
-    if feedback.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bu fikrni o'zgartirish huquqingiz yo'q"
-        )
-
-    return feedback_crud.update_feedback(
-        db=db, feedback_id=feedback_id, feedback_update=feedback_in
+    # Feedback yaratish
+    db_feedback = Feedback(
+        worker_id=feedback_in.worker_id,
+        user_id=user_id,  # Foydalanuvchi ID sini qo'shish
+        rate=feedback_in.rate,
+        text=feedback_in.text,
     )
+    db.add(db_feedback)
+    db.commit()
+    db.refresh(db_feedback)  # Yaratilgan feedbackni yangilash
+    return db_feedback
+
+
 
 
 @router.delete("/{feedback_id}", status_code=status.HTTP_200_OK)

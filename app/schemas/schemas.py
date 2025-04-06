@@ -149,12 +149,20 @@ class FeedbackBase(BaseModel):
 
 
 class FeedbackCreate(BaseModel):
-    worker_id: int  # Ishchi id
-    rate: int       # Baho
-    text: str       # Fikr matni
+    worker_id: int
+    rate: int
+    text: Optional[str] = None
+    
+
+class FeedbackResponse(BaseModel):
+    feedback_id: int
+    user_name: str
+    rate: int
+    text: Optional[str] = None
+    create_at: datetime
 
     class Config:
-        orm_mode = True
+        orm_mode = True 
 
 class FeedbackUpdate(BaseModel):
     """Feedback yangilash uchun schema"""
