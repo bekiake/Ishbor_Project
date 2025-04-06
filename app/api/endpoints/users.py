@@ -12,6 +12,7 @@ from app.database import get_db as get_async_db  # Asinxron DB session
 from app.schemas.schemas import Token, User, UserCreate, UserUpdate, UserWithFeedbacks
 from app.crud import user as user_crud
 from app.crud import feedback as feedback_crud
+from app.crud import worker as worker_crud
 from app.core.security import get_current_active_user
 import random
 import string
@@ -74,6 +75,38 @@ async def register_user(
         "registered": True,
     }
 
+@router.get("/me")
+async def get_user_profile(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> User:
+    
+    user = await user_crud.get_user_by_telegram_id(db, telegram_id=current_user.telegram_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.is_worker:
+        return User.from_orm(user)
+    else:
+        worker = worker_crud.get_worker_by_telegram_id(db, telegram_id=current_user.telegram_id)
+        if not worker:
+            raise HTTPException(status_code=404, detail="Worker not found")
+        return {
+        "id": worker.id,
+        "telegram_id": worker.telegram_id,
+        "name": worker.name,
+        "age": worker.age,
+        "phone": worker.phone,
+        "gender": worker.gender,
+        "payment_type": worker.payment_type,
+        "daily_payment": worker.daily_payment,
+        "languages": worker.languages,
+        "skills": worker.skills,
+        "location": worker.location,
+        "image": worker.image_url if hasattr(worker, "image_url") else None,
+        "is_active": worker.is_active
+    }
 
 # def generate_random_telegram_id(length=10):
 #
