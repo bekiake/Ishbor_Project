@@ -89,7 +89,7 @@ async def get_user_profile(
     if not user.is_worker:
         return User.from_orm(user)
     else:
-        worker = worker_crud.get_worker_by_telegram_id(db, telegram_id=current_user.telegram_id)
+        worker = await worker_crud.get_worker_by_telegram_id(db, telegram_id=current_user.telegram_id)
         if not worker:
             raise HTTPException(status_code=404, detail="Worker not found")
         return {
