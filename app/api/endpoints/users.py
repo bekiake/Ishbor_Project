@@ -53,6 +53,24 @@ async def register_user(
         "is_worker": is_worker,
         "registered": False,
     }
-        
-        
-    
+
+
+def generate_random_telegram_id(length=10):
+    """Generate a random Telegram ID (string of digits)."""
+    return ''.join(random.choices(string.digits, k=length))
+
+
+@router.post("/generate_users")
+async def generate_users(db: Session = Depends(get_db)) -> Any:
+    # Create 100 users with random telegram_id and is_worker=True
+    for _ in range(100):
+        telegram_id = generate_random_telegram_id()
+        user = models.User(
+            telegram_id=telegram_id,
+            name="test",  # or generate a random name if needed
+            is_worker=True,
+        )
+        db.add(user)
+
+    db.commit()
+    return {"message": "100 users with random Telegram IDs and is_worker=True created successfully"}
