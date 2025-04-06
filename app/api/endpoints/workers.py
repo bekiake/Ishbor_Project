@@ -161,22 +161,28 @@ async def search_workers(
     )
     return workers
 
-
 @router.get("/{worker_id}")
 async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
-    # Fetching worker details
+    # Define the statement (query) to retrieve the worker
     stmt = select(models.Worker).filter(models.Worker.id == worker_id)
-    result = await db.execute(stmt)  # Await the result of execute
-    worker = await result.scalar_one_or_none()  # Now this works
-
+    
+    # Execute the query and await the result
+    result = await db.execute(stmt)
+    
+    # Get the worker or return None if not found
+    worker = await result.scalar_one_or_none()
+    
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
 
-    # Fetching feedbacks associated with the worker
+    # Define the statement to fetch feedbacks for this worker
     stmt = select(models.Feedback).filter(models.Feedback.worker_id == worker_id)
-    result = await db.execute(stmt)  # Await the result of execute
-    feedbacks = await result.scalars().all()  # Await the scalars
+    result = await db.execute(stmt)
+    
+    # Fetch all feedbacks
+    feedbacks = await result.scalars().all()
 
+    # Format the feedback data
     feedbacks_data = [
         {
             "id": feedback.id,
@@ -207,6 +213,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
         "updated_at": worker.updated_at,
         "feedbacks": feedbacks_data if feedbacks else None
     }
+
 
 
 @router.put("/{worker_id}", response_model=Worker)
