@@ -88,16 +88,16 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 # API routerlarini qo'shish
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-@app.get("/")
-async def root():
-    """Asosiy sahifa"""
-    return {
-        "app_name": settings.PROJECT_NAME,
-        "version": "1.0.0",
-        "description": "Ishbor loyihasi uchun FastAPI backend",
-        "docs_url": "/docs",
-        "api_url": settings.API_V1_STR,
-    }
+# @app.get("/")
+# async def root():
+#     """Asosiy sahifa"""
+#     return {
+#         "app_name": settings.PROJECT_NAME,
+#         "version": "1.0.0",
+#         "description": "Ishbor loyihasi uchun FastAPI backend",
+#         "docs_url": "/docs",
+#         "api_url": settings.API_V1_STR,
+#     }
 
 if __name__ == "__main__":
     # Agarda to'g'ridan-to'g'ri bu fayl ishga tushirilsa
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8002,
+        port=8000,
         reload=settings.DEBUG,
         log_level=log_level,
     )
