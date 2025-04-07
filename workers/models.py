@@ -65,6 +65,9 @@ class Worker(models.Model):
 
     def set_skills(self, skills_list):
         self.skills = ", ".join(skills_list)
+    
+    def __str__(self):
+        return self.name if self.name else "Unknown Worker"
 
 class Feedback(models.Model):
     RATE_CHOICES = [

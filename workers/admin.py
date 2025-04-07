@@ -21,14 +21,17 @@ class WorkerAdmin(admin.ModelAdmin):
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     form = FeedbackForm
-    list_display = ('id', 'worker', 'user', 'rate', 'text', 'create_at')
+    list_display = ('id', 'worker_name', 'user', 'rate', 'text', 'create_at')  # worker_name ni qo‘shish
     search_fields = ('worker__name', 'user__name', 'text')
     list_filter = ('rate',)
     ordering = ('-create_at',)
-    
-    # Fieldsets orqali formadagi maydonlarni ko'rsatish
     fieldsets = (
         (None, {
-            'fields': ('worker', 'user', 'rate', 'text')  # Tanlash maydonlari
+            'fields': ('worker', 'user', 'rate', 'text')
         }),
     )
+
+    def worker_name(self, obj):
+        return obj.worker.name if obj.worker else None  # worker.name ni ko‘rsatish
+    worker_name.admin_order_field = 'worker__name'  # Sort qilish uchun
+    worker_name.short_description = 'Worker Name'  # Sarlavha
