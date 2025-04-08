@@ -50,6 +50,7 @@ async def read_worker_me(
         "id": worker.id,
         "telegram_id": worker.telegram_id,
         "name": worker.name,
+        "about": worker.about,
         "age": worker.age,
         "phone": worker.phone,
         "gender": worker.gender,
@@ -58,7 +59,7 @@ async def read_worker_me(
         "languages": worker.languages,
         "skills": worker.skills,
         "location": worker.location,
-        "image": worker.image_url if hasattr(worker, "image_url") else None,
+        "image": worker.image if hasattr(worker, "image") else None,
         "is_active": worker.is_active
     }
     return worker_data
@@ -67,6 +68,7 @@ async def read_worker_me(
 async def create_worker_with_image(
         telegram_id: str = Form(...),
         name: Optional[str] = Form(None),
+        about: Optional[str] = Form(None),
         age: Optional[int] = Form(None),
         phone: Optional[str] = Form(None),
         gender: Optional[str] = Form(None),
@@ -97,6 +99,7 @@ async def create_worker_with_image(
     worker_data = WorkerCreate(
         telegram_id=telegram_id,
         name=name,
+        about=about,
         age=age,
         phone=phone,
         gender=gender,
@@ -133,6 +136,7 @@ async def create_worker_with_image(
 
 @router.get("/search", response_model=List[Worker])
 async def search_workers(
+        name: Optional[str] = Query(None, description="Ishchi ismi"),
         skills: Optional[List[str]] = Query(None, description="Ko'nikmalar ro'yxati"),
         languages: Optional[List[str]] = Query(None, description="Tillar ro'yxati"),
         payment_type: Optional[str] = Query(None, description="To'lov turi"),
@@ -146,6 +150,7 @@ async def search_workers(
         db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     search_params = WorkerSearchParams(
+        name=name,
         skills=skills,
         languages=languages,
         payment_type=payment_type,
@@ -199,6 +204,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
         "id": workers.id,
         "telegram_id": workers.telegram_id,
         "name": workers.name,
+        "about": workers.about,
         "image": workers.image,
         "age": workers.age,
         "phone": workers.phone,
@@ -220,6 +226,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
 async def update_worker(
         worker_id: int,
         name: Optional[str] = Form(None),
+        about: Optional[str] = Form(None),
         age: Optional[int] = Form(None),
         phone: Optional[str] = Form(None),
         gender: Optional[str] = Form(None),
@@ -252,6 +259,8 @@ async def update_worker(
     update_data = {}
     if name is not None:
         update_data["name"] = name
+    if about is not None:
+        update_data["about"] = about
     if age is not None:
         update_data["age"] = age
     if phone is not None:

@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func, or_, and_
 import math
 
-from app.models.models import Worker, Feedback
+from app.models.models import Skills, Worker, Feedback
 from app.schemas.schemas import WorkerCreate, WorkerUpdate, WorkerLocation, WorkerSearchParams
 
 
@@ -39,6 +39,7 @@ async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
     db_worker = Worker(
         telegram_id=worker.telegram_id,
         name=worker.name,
+        about=worker.about,
         age=worker.age,
         phone=worker.phone,
         gender=worker.gender,
@@ -155,26 +156,22 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
 
 async def search_workers(
-        db: AsyncSession,
-        search_params: WorkerSearchParams,
-        skip: int = 0,
-        limit: int = 100
+    db: AsyncSession,
+    search_params: WorkerSearchParams,
+    skip: int = 0,
+    limit: int = 100
 ) -> List[Worker]:
     query = select(Worker).filter(Worker.is_active == True)
 
-    # Ko'nikmalar bo'yicha filtrlash
+    # Skill bo'yicha filtrlash
     if search_params.skills:
-        skill_filters = []
-        for skill in search_params.skills:
-            skill_filters.append(Worker.skills.ilike(f'%{skill}%'))
+        skill_filters = [Worker.skills.ilike(f'%{skill}%') for skill in search_params.skills]
         if skill_filters:
             query = query.filter(or_(*skill_filters))
 
     # Tillar bo'yicha filtrlash
     if search_params.languages:
-        language_filters = []
-        for language in search_params.languages:
-            language_filters.append(Worker.languages.ilike(f'%{language}%'))
+        language_filters = [Worker.languages.ilike(f'%{language}%') for language in search_params.languages]
         if language_filters:
             query = query.filter(or_(*language_filters))
 
@@ -197,23 +194,23 @@ async def search_workers(
     if search_params.max_payment is not None:
         query = query.filter(Worker.daily_payment <= search_params.max_payment)
 
-    # Lokatsiya bo'yicha filtrlash
-    # Agar lokatsiya va masofa berilgan bo'lsa, Python kodida filtrlash kerak
+    # Ism (name) bo'yicha filtrlash
+    if search_params.name:
+        query = query.filter(Worker.name.ilike(f'%{search_params.name}%'))
+
     result = await db.execute(query)
     workers = result.scalars().all()
 
+    # Lokatsiya va masofa bo'yicha filtrlash
     if search_params.location and search_params.distance:
         try:
-            # Lokatsiya formatini tekshirish
             parts = search_params.location.split(',')
             if len(parts) != 2:
-                return workers  # Noto'g'ri format bo'lsa, filtrsiz qaytarish
+                return workers  # Noto'g'ri format
 
-            # Qidiruv koordinatalari
             search_lat = float(parts[0].strip())
             search_lon = float(parts[1].strip())
 
-            # Masofaga qarab filtrlash
             filtered_workers = []
             for worker in workers:
                 if worker.location:
@@ -224,15 +221,13 @@ async def search_workers(
                             if distance <= search_params.distance:
                                 filtered_workers.append(worker)
                     except (ValueError, TypeError):
-                        pass  # Noto'g'ri koordinata formatini o'tkazib yuborish
+                        pass
 
             return filtered_workers
         except (ValueError, TypeError):
-            # Xatolik yuz bersa, filtrsiz qaytarish
             return workers
 
     return workers
-
 
 async def get_worker_statistics(db: AsyncSession) -> Dict[str, Any]:
     # Umumiy ishchilar soni
@@ -276,3 +271,9 @@ async def get_worker_statistics(db: AsyncSession) -> Dict[str, Any]:
         "payment_distribution": payment_distribution,
         "gender_distribution": gender_distribution,
     }
+
+
+async def get_all_skill_names(db: AsyncSession) -> List[str]:
+    result = await db.execute(select(Skills.name))
+    names = result.scalars().all()
+    return names

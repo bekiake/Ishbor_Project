@@ -42,6 +42,7 @@ class WorkerBase(BaseModel):
     """Worker uchun asosiy ma'lumotlar"""
     telegram_id: str
     name: Optional[str] = None
+    about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
     gender: Optional[str] = None
@@ -225,6 +226,7 @@ class TokenPayload(BaseModel):
 # Search schemas
 class WorkerSearchParams(BaseModel):
     """Worker qidirish parametrlari"""
+    name: Optional[str] = None
     skills: Optional[List[str]] = None
     languages: Optional[List[str]] = None
     payment_type: Optional[str] = None
