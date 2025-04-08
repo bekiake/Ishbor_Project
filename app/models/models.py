@@ -31,6 +31,7 @@ class Worker(Base):
     id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(String(100), unique=True, index=True)
     name = Column(String(255), nullable=True)
+    about = Column(Text, nullable=True)
     image = Column(String(255), nullable=True)
     age = Column(Integer, nullable=True)
     phone = Column(String(255), nullable=True, unique=True)

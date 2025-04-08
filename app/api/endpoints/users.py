@@ -187,12 +187,13 @@ async def generate_users(name: str, db: AsyncSession = Depends(get_async_db)) ->
             )
             db.add(db_user)
 
-            # Agar foydalanuvchi is_worker=True bo'lsa, workers_worker jadvaliga ma'lumot kiritish
+
             if db_user.is_worker:
                 worker = models.Worker(
                     telegram_id=db_user.telegram_id,
                     name=db_user.name,
                     image=generate_random_image_url(),
+                    about=generate_random_about(),
                     age=generate_random_age(),
                     phone=generate_random_phone(),
                     gender=generate_random_gender(),
