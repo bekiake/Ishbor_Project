@@ -1,8 +1,3 @@
-"""
-User API endpointlari
-
-User uchun API endpointlari
-"""
 from typing import Any, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.api.endpoints.auth import generate_access_token
@@ -114,98 +109,110 @@ async def get_user_profile(
 #     return {"message": "100 users with random Telegram IDs and is_worker=True created successfully"}
 #
 
-# import random
-# import string
-# from fastapi import APIRouter, Depends
-# from sqlalchemy.orm import Session
-# from typing import Any
+import random
+import string
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import Any
 
-# def generate_random_telegram_id(length=7):
-#     """Tasodifiy telegram_id (raqamlardan) hosil qiladi."""
-#     return ''.join(random.choices(string.digits, k=length))
+def generate_random_telegram_id(length=7):
+    """Tasodifiy telegram_id (raqamlardan) hosil qiladi."""
+    return ''.join(random.choices(string.digits, k=length))
 
-# def generate_random_image_url():
-#     """Tasodifiy image URL (placeholder) qaytaradi."""
-#     return "https://via.placeholder.com/150"
+def generate_random_image_url():
+    """Tasodifiy image URL (placeholder) qaytaradi."""
+    return "https://via.placeholder.com/150"
 
-# def generate_random_age():
-#     """18 dan 60 gacha tasodifiy yosh qaytaradi."""
-#     return random.randint(18, 60)
+def generate_random_age():
+    """18 dan 60 gacha tasodifiy yosh qaytaradi."""
+    return random.randint(18, 60)
 
-# def generate_random_phone():
-#     """Tasodifiy telefon raqamini (9 raqam) hosil qiladi."""
-#     return ''.join(random.choices(string.digits, k=9))
+def generate_random_phone():
+    """Tasodifiy telefon raqamini (9 raqam) hosil qiladi."""
+    return ''.join(random.choices(string.digits, k=9))
 
-# def generate_random_gender():
-#     """Tasodifiy gender (male/female) tanlaydi."""
-#     return random.choice(["male", "female"])
+def generate_random_gender():
+    """Tasodifiy gender (male/female) tanlaydi."""
+    return random.choice(["male", "female"])
 
-# def generate_random_payment_type():
-#     """Tasodifiy to'lov turini tanlaydi."""
-#     return random.choice(["barchasi", "naqd", "karta"])
+def generate_random_payment_type():
+    """Tasodifiy to'lov turini tanlaydi."""
+    return random.choice(["barchasi", "naqd", "karta"])
 
-# def generate_random_daily_payment():
-#     """Tasodifiy kunlik to'lov summasini (20 dan 200 gacha) qaytaradi."""
-#     return random.randint(20, 200)
+def generate_random_daily_payment():
+    """Tasodifiy kunlik to'lov summasini (20 dan 200 gacha) qaytaradi."""
+    return random.randint(20, 200)
 
-# def generate_random_languages():
-#     """Tasodifiy tillarni tanlab, vergul bilan ajratilgan string qaytaradi."""
-#     possible_languages = ["English", "Russian", "Uzbek", "Spanish", "German"]
-#     selected = random.sample(possible_languages, k=random.randint(1, 3))
-#     return ", ".join(selected)
+def generate_random_languages():
+    """Tasodifiy tillarni tanlab, vergul bilan ajratilgan string qaytaradi."""
+    possible_languages = ["English", "Russian", "Uzbek", "Spanish", "German"]
+    selected = random.sample(possible_languages, k=random.randint(1, 3))
+    return ", ".join(selected)
 
-# def generate_random_skills():
-#     """Tasodifiy malakalarni tanlab, vergul bilan ajratilgan string qaytaradi."""
-#     possible_skills = ["Python", "JavaScript", "HTML", "CSS", "FastAPI", "Django", "Docker", "SQL"]
-#     selected = random.sample(possible_skills, k=random.randint(1, 4))
-#     return ", ".join(selected)
+def generate_random_skills():
+    """Tasodifiy malakalarni tanlab, vergul bilan ajratilgan string qaytaradi."""
+    possible_skills = ["Python", "JavaScript", "HTML", "CSS", "FastAPI", "Django", "Docker", "SQL"]
+    selected = random.sample(possible_skills, k=random.randint(1, 4))
+    return ", ".join(selected)
 
-# def generate_random_location():
-#     """Tasodifiy joylashuvni tanlaydi."""
-#     possible_locations = ["Tashkent", "Samarkand", "Bukhara", "Andijan", "Namangan", "Nukus"]
-#     return random.choice(possible_locations)
+def generate_random_location():
+    """Tasodifiy joylashuvni tanlaydi."""
+    possible_locations = ["Tashkent", "Samarkand", "Bukhara", "Andijan", "Namangan", "Nukus"]
+    return random.choice(possible_locations)
 
-# @router.post("/generate_users1")
-# async def generate_users(name: str, db: Session = Depends(get_db)) -> Any:
-#     """
-#     Kiritilgan yagona name parametri orqali:
-#       1) 100 ta foydalanuvchi workers_user jadvalida is_worker=True bilan yaratiladi.
-#       2) Agar foydalanuvchi is_worker=True bo'lsa, unga mos keladigan random ma'lumotlar bilan workers_worker jadvaliga yozuv qo'shiladi.
-#     """
-#     created_count = 0
-#     for _ in range(100):
-#         telegram_id = generate_random_telegram_id()
-#         # workers_user jadvaliga foydalanuvchi qo'shish
-#         db_user = models.User(
-#             telegram_id=telegram_id,
-#             name=name,  # faqat bitta kiritilgan name ishlatiladi
-#             is_worker=True
-#         )
-#         db.add(db_user)
-#         db.commit()
-#         db.refresh(db_user)
 
-#         # Agar foydalanuvchi is_worker=True bo'lsa, workers_worker jadvaliga ma'lumot kiritish
-#         if db_user.is_worker:
-#             worker = models.Worker(
-#                 telegram_id=db_user.telegram_id,
-#                 name=db_user.name,
-#                 image=generate_random_image_url(),
-#                 age=generate_random_age(),
-#                 phone=generate_random_phone(),
-#                 gender=generate_random_gender(),
-#                 payment_type=generate_random_payment_type(),
-#                 daily_payment=generate_random_daily_payment(),
-#                 languages=generate_random_languages(),
-#                 skills=generate_random_skills(),
-#                 location=generate_random_location(),
-#                 is_active=True
-#             )
-#             db.add(worker)
-#             created_count += 1
+def generate_random_about():
+    descriptions = [
+        "I am a passionate developer with a love for technology and coding.",
+        "An avid learner, always seeking new challenges and opportunities to grow.",
+        "Creative thinker with a strong background in problem-solving and development.",
+        "I enjoy working on diverse projects and collaborating with teams to bring ideas to life.",
+        "Tech enthusiast with expertise in web development and a drive for continuous improvement."
+    ]
 
-#     db.commit()
+    return random.choice(descriptions)
 
-#     return {
-#         "message": f"{created_count} worker yozuvi workers_worker jadvaliga yaratildi, name: {name}"
-#     }
+
+@router.post("/generate_users1")
+async def generate_users(name: str, db: AsyncSession = Depends(get_async_db)) -> Any:
+    created_count = 0
+    try:
+        for _ in range(100):
+            telegram_id = generate_random_telegram_id()
+            # workers_user jadvaliga foydalanuvchi qo'shish
+            db_user = models.User(
+                telegram_id=telegram_id,
+                name=name,  # faqat bitta kiritilgan name ishlatiladi
+                is_worker=True
+            )
+            db.add(db_user)
+
+            # Agar foydalanuvchi is_worker=True bo'lsa, workers_worker jadvaliga ma'lumot kiritish
+            if db_user.is_worker:
+                worker = models.Worker(
+                    telegram_id=db_user.telegram_id,
+                    name=db_user.name,
+                    image=generate_random_image_url(),
+                    age=generate_random_age(),
+                    phone=generate_random_phone(),
+                    gender=generate_random_gender(),
+                    payment_type=generate_random_payment_type(),
+                    daily_payment=generate_random_daily_payment(),
+                    languages=generate_random_languages(),
+                    skills=generate_random_skills(),
+                    location=generate_random_location(),
+                    is_active=True
+                )
+                db.add(worker)
+                created_count += 1
+
+        # Asinxron commit
+        await db.commit()
+
+    except Exception as e:
+        await db.rollback()  # Xatolik yuz beradigan bo'lsa, rollback qilinadi
+        return {"message": f"Error: {str(e)}"}
+
+    return {
+        "message": f"{created_count} worker yozuvi workers_worker jadvaliga yaratildi, name: {name}"
+    }
