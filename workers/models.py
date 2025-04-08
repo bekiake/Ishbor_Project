@@ -48,18 +48,6 @@ class Worker(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def set_location(self, lat, long):
-        self.location = f"{lat},{long}"
-        self.save()
-
-    def get_location(self):
-        if self.location:
-            try:
-                lat, long = map(float, self.location.split(','))
-                return lat, long
-            except ValueError:
-                return None
-        return None
 
     def get_languages_list(self):
         return [lang.strip() for lang in self.languages.split(",")] if self.languages else []

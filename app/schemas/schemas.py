@@ -73,8 +73,7 @@ class WorkerUpdate(BaseModel):
 
 class WorkerLocation(BaseModel):
     """Worker lokatsiyasini yangilash uchun schema"""
-    latitude: float
-    longitude: float
+    location: Optional[str] = None
 
 
 class WorkerInDBBase(WorkerBase):
@@ -94,15 +93,12 @@ class Worker(WorkerInDBBase):
     """Worker response schema"""
     languages_list: Optional[List[str]] = None
     skills_list: Optional[List[str]] = None
-    location_coords: Optional[Dict[str, float]] = None
 
     # Eski @root_validator o'rniga @model_validator ishlatish
-    @field_validator('languages_list', 'skills_list', 'location_coords', mode='before')
+    @field_validator('languages_list', 'skills_list', mode='before')
     @classmethod
     def set_lists_and_coords(cls, values, info):
-        """
-        Qo'shimcha ma'lumotlarni qayta ishlash
-        """
+        
         data = info.data  # Modelning barcha ma'lumotlari
 
         # Languages ro'yxatini hosil qilish
@@ -121,22 +117,15 @@ class Worker(WorkerInDBBase):
 
         # Lokatsiyani qayta ishlash
         location = data.get('location')
-        location_coords = None
-        if location:
-            try:
-                lat, lng = map(float, location.split(','))
-                location_coords = {'latitude': lat, 'longitude': lng}
-            except (ValueError, TypeError):
-                pass
-
+        
         # Field name bo'yicha qiymatni qaytarish
         field_name = info.field_name
         if field_name == 'languages_list':
             return languages_list
         elif field_name == 'skills_list':
             return skills_list
-        elif field_name == 'location_coords':
-            return location_coords
+        elif field_name == 'location':
+            return location
         return values
 
 class Feedbackss(BaseModel):
