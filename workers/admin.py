@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import User, Worker, Feedback, Skills
 from .forms import FeedbackForm
 
-@admin.register(Skills)
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -40,5 +40,4 @@ class FeedbackAdmin(admin.ModelAdmin):
     worker_name.short_description = 'Worker Name'  # Sarlavha
 
 
-
-
+admin.site.register(Skills)
