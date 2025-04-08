@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from app.models.models import Skills
 from .models import User, Worker, Feedback
 
 @admin.register(User)
@@ -22,3 +24,5 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_filter = ('rate',)
     search_fields = ('worker__name', 'user__name', 'text')
     ordering = ('-create_at',)
+
+@admin.register(Skills)
