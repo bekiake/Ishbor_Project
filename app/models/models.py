@@ -47,25 +47,7 @@ class Worker(Base):
     # Django modelida foreign key qanday nomlangan bo'lsa, relationship ham shunga mos bo'lishi kerak
     feedbacks = relationship("Feedback", back_populates="worker")
 
-    def get_location_tuple(self):
-        """
-        Lokatsiyani latitude va longitude sifatida qaytaradi
-        """
-        if self.location:
-            try:
-                lat, long = map(float, self.location.split(','))
-                return lat, long
-            except (ValueError, TypeError):
-                return None, None
-        return None, None
-
-    def set_location(self, lat, long):
-        """
-        Lokatsiyani latitude va longitude orqali o'rnatadi
-        """
-        if lat is not None and long is not None:
-            self.location = f"{lat},{long}"
-
+    
     def get_languages_list(self):
         """
         Tillarni ro'yxat sifatida qaytaradi

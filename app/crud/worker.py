@@ -64,13 +64,10 @@ async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
         db_worker.skills_list = []
 
     if db_worker.location:
-        try:
-            lat, lng = map(float, db_worker.location.split(','))
-            db_worker.location_coords = {"latitude": lat, "longitude": lng}
-        except (ValueError, TypeError):
-            db_worker.location_coords = None
+        db.worker.location = db_worker.location
     else:
-        db_worker.location_coords = None
+        db_worker.location = None
+        
 
     return db_worker
 
@@ -91,7 +88,7 @@ async def update_worker_location(
 ) -> Optional[Worker]:
     db_worker = await get_worker(db, worker_id)
     if db_worker:
-        db_worker.location = f"{location.latitude},{location.longitude}"
+        db_worker.location = location
         await db.commit()
         await db.refresh(db_worker)
     return db_worker
@@ -198,36 +195,14 @@ async def search_workers(
     if search_params.name:
         query = query.filter(Worker.name.ilike(f'%{search_params.name}%'))
 
+    if search_params.location:
+        query = query.filter(Worker.location.ilike(f'%{search_params.location}%'))
+    
     result = await db.execute(query)
     workers = result.scalars().all()
 
-    # Lokatsiya va masofa bo'yicha filtrlash
-    if search_params.location and search_params.distance:
-        try:
-            parts = search_params.location.split(',')
-            if len(parts) != 2:
-                return workers  # Noto'g'ri format
-
-            search_lat = float(parts[0].strip())
-            search_lon = float(parts[1].strip())
-
-            filtered_workers = []
-            for worker in workers:
-                if worker.location:
-                    try:
-                        lat, lon = worker.get_location_tuple()
-                        if lat is not None and lon is not None:
-                            distance = calculate_distance(search_lat, search_lon, lat, lon)
-                            if distance <= search_params.distance:
-                                filtered_workers.append(worker)
-                    except (ValueError, TypeError):
-                        pass
-
-            return filtered_workers
-        except (ValueError, TypeError):
-            return workers
-
     return workers
+
 
 async def get_worker_statistics(db: AsyncSession) -> Dict[str, Any]:
     # Umumiy ishchilar soni
