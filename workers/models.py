@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 
 class User(models.Model):
     telegram_id = models.CharField(max_length=100, unique=True)
@@ -8,6 +7,13 @@ class User(models.Model):
     is_worker = models.BooleanField(default=False, verbose_name='Is Worker')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Skills(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
 
     def __str__(self):
         return self.name
@@ -28,6 +34,7 @@ class Worker(models.Model):
 
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
+    about = models.TextField(max_length=255, null=True, blank=True, verbose_name='About')
     image = models.ImageField(upload_to='uploads/workers/', null=True, blank=True)
     age = models.IntegerField(null=True, blank=True, verbose_name='Age')
     phone = models.CharField(max_length=255,null=True, blank=True, verbose_name='Phone', unique=True)
@@ -69,6 +76,7 @@ class Worker(models.Model):
     def __str__(self):
         return self.name if self.name else "Unknown Worker"
 
+
 class Feedback(models.Model):
     RATE_CHOICES = [
         (1, '1 - Very Bad'),
@@ -87,3 +95,5 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.worker.name} - {self.user.name} - {self.rate} - {self.text}"
+    
+

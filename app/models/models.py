@@ -121,3 +121,9 @@ class Feedback(Base):
 
     def __str__(self):
         return f"{self.worker.name} - {self.user.name} - {self.rate}"
+
+class Skills(Base):
+    __tablename__ = "workers_skills"  # Django jadval nomi
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=True, unique=True)
