@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import User, Worker, Feedback
+
+from .models import User, Worker, Feedback, Skills
 from .forms import FeedbackForm
 
 
@@ -25,6 +26,7 @@ class FeedbackAdmin(admin.ModelAdmin):
     search_fields = ('worker__name', 'user__name', 'text')
     list_filter = ('rate',)
     ordering = ('-create_at',)
+
     fieldsets = (
         (None, {
             'fields': ('worker', 'user', 'rate', 'text')
@@ -35,3 +37,7 @@ class FeedbackAdmin(admin.ModelAdmin):
         return obj.worker.name if obj.worker else None  # worker.name ni ko‘rsatish
     worker_name.admin_order_field = 'worker__name'  # Sort qilish uchun
     worker_name.short_description = 'Worker Name'  # Sarlavha
+
+
+@admin.register(Skills)
+
