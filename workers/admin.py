@@ -40,4 +40,8 @@ class FeedbackAdmin(admin.ModelAdmin):
     worker_name.short_description = 'Worker Name'  # Sarlavha
 
 
-admin.site.register(Skills)
+@admin.register(Skills)
+class SkillsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')  # 'name' yoki o'zingiz istagan maydonlar
+    search_fields = ('name',)  # 'name' ustida qidiruv
+    ordering = ('name',)
