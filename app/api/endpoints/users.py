@@ -58,17 +58,30 @@ async def register_user(
             "is_worker": is_worker,
             "name": name,
             "telegram_id": telegram_id,
-            "registered": False,  # Yangi foydalanuvchi uchun registered False bo‘ladi
+            "registered": False,
         }
-    
-    token = await generate_access_token(user.telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(user.telegram_id)
-    return {
-        "access_token": token,
-        "name": name,
-        "telegram_id": telegram_id,
-        "is_worker": is_worker,
-        "registered": True,
-    }
+
+    if user.is_worker:
+        worker = await worker_crud.get_worker_by_telegram_id(db, telegram_id=telegram_id)
+        if not worker:
+            token = await generate_access_token(telegram_id) if hasattr(generate_access_token,'__call__') else generate_access_token(telegram_id)
+            return {
+                "access_token": token,
+                "is_worker": is_worker,
+                "name": name,
+                "telegram_id": telegram_id,
+                "registered": False,
+            }
+
+    if user and user.is_worker==False:
+        token = await generate_access_token(user.telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(user.telegram_id)
+        return {
+            "access_token": token,
+            "name": name,
+            "telegram_id": telegram_id,
+            "is_worker": is_worker,
+            "registered": True,
+        }
 
 @router.get("/me", response_model=Union[UserOut, WorkerOut])
 async def get_user_profile(
