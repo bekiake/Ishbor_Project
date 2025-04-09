@@ -242,8 +242,7 @@ async def update_worker(
         daily_payment: Optional[int] = Form(None),
         languages: Optional[str] = Form(None),
         skills: Optional[str] = Form(None),
-        latitude: Optional[float] = Form(None),
-        longitude: Optional[float] = Form(None),
+        location: Optional[str] = Form(None),
         image: Optional[UploadFile] = File(None),
         is_active: Optional[bool] = Form(None),
         db: AsyncSession = Depends(get_async_db),
@@ -283,8 +282,8 @@ async def update_worker(
         worker.set_languages([lang.strip() for lang in languages.split(",")])
     if skills is not None:
         worker.set_skills([skill.strip() for skill in skills.split(",")])
-    if latitude is not None and longitude is not None:
-        worker.set_location(latitude, longitude)
+    if location is not None:
+        worker.set_location(location)
     if is_active is not None:
         update_data["is_active"] = is_active
 
