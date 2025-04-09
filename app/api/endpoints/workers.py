@@ -31,6 +31,10 @@ async def read_workers(
         db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit, is_active=is_active)
+    for worker in workers:
+        if worker.image:  # Agar rasm bo‘lsa
+            worker.image = f"{settings.MEDIA_URL}uploads/workers/{worker.image}"
+
     return workers
 
 @router.get("/me", response_model=dict)
@@ -59,7 +63,7 @@ async def read_worker_me(
         "languages": worker.languages,
         "skills": worker.skills,
         "location": worker.location,
-        "image": worker.image if hasattr(worker, "image") else None,
+        "image": f"https://admin.ishbozor.uz/{worker.image}" if hasattr(worker, "image") else None,
         "is_active": worker.is_active
     }
     return worker_data
