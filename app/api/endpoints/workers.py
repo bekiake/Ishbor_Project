@@ -33,7 +33,7 @@ async def read_workers(
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit, is_active=is_active)
     for worker in workers:
         if worker.image:  # Agar rasm bo‘lsa
-            worker.image = f"{settings.MEDIA_URL}uploads/workers/{worker.image}"
+            worker.image = f"https://admin.ishbozor.uz/{settings.MEDIA_URL}uploads/workers/{worker.image}"
 
     return workers
 
@@ -63,7 +63,7 @@ async def read_worker_me(
         "languages": worker.languages,
         "skills": worker.skills,
         "location": worker.location,
-        "image": f"https://admin.ishbozor.uz/{worker.image}" if hasattr(worker, "image") else None,
+        "image": f"https://admin.ishbozor.uz/{settings.MEDIA_URL}uploads/workers/{worker.image}",
         "is_active": worker.is_active
     }
     return worker_data
@@ -168,6 +168,9 @@ async def search_workers(
     workers = await worker_crud.search_workers(
         db, search_params=search_params, skip=skip, limit=limit
     )
+    for worker in workers:
+        if worker.image:
+            worker.image = f"https://admin.ishbozor.uz/{settings.MEDIA_URL}uploads/workers/{worker.image}"
     return workers
 
 @router.get("/{worker_id}")
@@ -176,6 +179,7 @@ async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async
     stmt = select(models.Worker).filter(models.Worker.id == worker_id)
     result = await db.execute(stmt)
     workers = result.scalar_one_or_none()
+    workers.image = f"https://admin.ishbozor.uz/{settings.MEDIA_URL}uploads/workers/{workers.image}"
     
     if not workers:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -311,7 +315,7 @@ async def update_worker(
 
         image_url = f"{settings.MEDIA_URL}uploads/workers/{filename}"
         worker = await worker_crud.update_worker_image(db=db, worker_id=worker_id, image_path=image_url)
-
+        worker.image = f"https://admin.ishbozor.uz/{settings.MEDIA_URL}uploads/workers/{worker.image}"
     return worker
 
 @router.patch("/{worker_id}/toggle-status", status_code=status.HTTP_200_OK)
