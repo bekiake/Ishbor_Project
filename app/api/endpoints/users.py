@@ -108,6 +108,7 @@ async def get_user_profile(
         return UserOut.from_orm(user)
     else:
         worker = await worker_crud.get_worker_by_telegram_id(db, telegram_id=current_user.telegram_id)
+        worker.image = f"https://admin.ishbozor.uz{worker.image}"
         if not worker:
             raise HTTPException(status_code=404, detail="Worker not found")
         return WorkerOut.from_orm(worker)
