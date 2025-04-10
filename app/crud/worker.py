@@ -64,7 +64,7 @@ async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
         db_worker.skills_list = []
 
     if db_worker.location:
-        db.worker.location = db_worker.location
+        db_worker.location = db_worker.location
     else:
         db_worker.location = None
         
