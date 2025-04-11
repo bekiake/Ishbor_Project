@@ -14,7 +14,7 @@ from ...core.security import get_current_user
 from app.database import get_db as get_async_db  # Sizning get_db funksiyangiz
 from app.schemas.schemas import (
     Worker, WorkerCreate, WorkerUpdate, WorkerWithFeedbacks,
-    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats, WorkerDetail
+    WorkerLocation, Feedback, WorkerSearchParams, WorkerStats, WorkerDetail, WorkerSimpleSchema
 )
 from app.crud import worker as worker_crud
 from app.crud import feedback as feedback_crud
@@ -25,7 +25,7 @@ from app.models import models
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Worker])
+@router.get("/", response_model=List[WorkerSimpleSchema])
 async def read_workers(
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(100, description="Qaytariladigan ma'lumotlar soni"),
@@ -35,23 +35,21 @@ async def read_workers(
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit, is_active=is_active)
     result = []
     for worker in workers:
-        if worker.image:  # Agar rasm bo‘lsa
-            image = f"https://admin.ishbozor.uz{worker.image}"
+        image = f"https://admin.ishbozor.uz{worker.image}" if worker.image else None
         skills_list = [s.strip() for s in worker.skills.split(",")] if worker.skills else []
         languages_list = [l.strip() for l in worker.languages.split(",")] if worker.languages else []
         
-        result.append({
-        "id": worker.id,
-        "name": worker.name,
-        "age": worker.age,
-        "gender": worker.gender,
-        "phone": worker.phone,
-        "location": worker.location,
-        "skills": skills_list,
-        "languages": languages_list,
-        "image": image,
-        
-        })
+        result.append(WorkerSimpleSchema(
+            id=worker.id,
+            name=worker.name,
+            age=worker.age,
+            gender=worker.gender,
+            phone=worker.phone,
+            location=worker.location,
+            skills=skills_list,
+            languages=languages_list,
+            image=image,
+        ))
 
     return result
 

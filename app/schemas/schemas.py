@@ -36,7 +36,19 @@ class User(UserInDBBase):
     """User response schema"""
     pass
 
+class WorkerSimpleSchema(BaseModel):
+    id: int
+    name: str
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    skills: List[str]
+    languages: List[str]
+    image: Optional[str] = None
 
+    class Config:
+        orm_mode = True
 # Worker schemas
 class WorkerBase(BaseModel):
     """Worker uchun asosiy ma'lumotlar"""
