@@ -192,9 +192,9 @@ async def search_workers(
 async def filter_workers(
     request: Request,
     gender: Optional[str] = None,
+    name: Optional[str] = None,
     db: AsyncSession = Depends(get_async_db)
 ):
-    # skills[]=... dan qiymatlarni olish
     raw_query_params = request.query_params
     skills = raw_query_params.getlist("skills[]")
     languages = raw_query_params.getlist("languages[]")
@@ -202,21 +202,25 @@ async def filter_workers(
 
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
-    # ➤ Skill bo‘yicha filter
+    # Name bo‘yicha filter
+    if name:
+        stmt = stmt.where(models.Worker.name.ilike(f"%{name}%"))
+
+    # Skills
     if skills and "barchasi" not in [s.lower() for s in skills]:
         skill_conditions = [models.Worker.skills.ilike(f"%{skill}%") for skill in skills]
         stmt = stmt.where(or_(*skill_conditions))
 
-    # ➤ Language bo‘yicha filter
+    # Languages
     if languages and "barchasi" not in [l.lower() for l in languages]:
         lang_conditions = [models.Worker.languages.ilike(f"%{lang}%") for lang in languages]
         stmt = stmt.where(or_(*lang_conditions))
 
-    # ➤ Gender bo‘yicha filter
+    # Gender
     if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
-    # ➤ Age range bo‘yicha filter
+    # Age Range
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
         age_conditions = []
         for range_str in age_range:
