@@ -154,7 +154,7 @@ async def create_worker_with_image(
 
     return db_worker
 
-@router.get("/search", response_model=List[Worker])
+@router.get("/search", response_model=List[WorkerSimpleSchema])
 async def search_workers(
         name: Optional[str] = Query(None, description="Ishchi ismi"),
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
@@ -168,10 +168,25 @@ async def search_workers(
     workers = await worker_crud.search_workers(
         db, search_params=search_params, skip=skip, limit=limit
     )
+    result = []
     for worker in workers:
-        if worker.image:
-            worker.image = f"https://admin.ishbozor.uz{worker.image}"
-    return workers
+        image = f"https://admin.ishbozor.uz{worker.image}" if worker.image else None
+        skills_list = [s.strip() for s in worker.skills.split(",")] if worker.skills else []
+        languages_list = [l.strip() for l in worker.languages.split(",")] if worker.languages else []
+        
+        result.append(WorkerSimpleSchema(
+            id=worker.id,
+            name=worker.name,
+            age=worker.age,
+            gender=worker.gender,
+            phone=worker.phone,
+            location=worker.location,
+            skills=skills_list,
+            languages=languages_list,
+            image=image,
+        ))
+
+    return result
 
 @router.get("/workers/filter/")
 async def filter_workers(
