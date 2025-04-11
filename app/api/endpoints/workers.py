@@ -5,6 +5,7 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 import aiofiles  # Asinxron fayl operatsiyalari uchun
 import os
 from pathlib import Path as FilePath
@@ -147,7 +148,7 @@ async def search_workers(
         gender: Optional[str] = Query(None, description="Jinsi"),
         min_payment: Optional[int] = Query(None, description="Minimal to'lov"),
         max_payment: Optional[int] = Query(None, description="Maksimal to'lov"),
-        location: Optional[str] = Query(None, description="Lokatsiya (format: 'latitude,longitude')"),
+        location: Optional[str] = Query(None, description="Lokatsiya"),
         distance: Optional[float] = Query(None, description="Masofa (km)"),
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(20, description="Qaytariladigan ma'lumotlar soni"),
@@ -174,60 +175,53 @@ async def search_workers(
     return workers
 
 @router.get("/{worker_id}")
-async def get_worker_detail(worker_id: int, db: AsyncSession = Depends(get_async_db)):
-    # Worker ma'lumotlarini olish
-    stmt = select(models.Worker).filter(models.Worker.id == worker_id)
-    result = await db.execute(stmt)
-    workers = result.scalar_one_or_none()
-    workers.image = f"https://admin.ishbozor.uz{workers.image}"
-    
-    if not workers:
-        raise HTTPException(status_code=404, detail="Worker not found")
-    
-    # Feedbacklarni olish va user bilan join qilish
-    stmt = select(models.Feedback, models.User).outerjoin(
-        models.User, models.Feedback.user_id == models.User.id
-    ).filter(models.Feedback.worker_id == worker_id)
-    
-    result = await db.execute(stmt)
-    feedback_results = result.all()
-    
-    # Feedbacklarni formatlash
-    feedbacks_data = []
-    for feedback_row in feedback_results:
-        feedback = feedback_row[0]  # Feedback obyekti
-        user = feedback_row[1]      # User obyekti (null bo'lishi mumkin)
-        
-        feedbacks_data.append({
-            "id": feedback.id,
-            "rate": feedback.rate,
-            "text": feedback.text,
-            "create_at": feedback.create_at,
-            "update_at": feedback.update_at,
-            "user_name": user.name if user else "Anonymous"
-        })
-    
-    # Worker va feedbacklar bilan javob qaytarish
-    return {
-        "id": workers.id,
-        "telegram_id": workers.telegram_id,
-        "name": workers.name,
-        "about": workers.about,
-        "image": workers.image,
-        "age": workers.age,
-        "phone": workers.phone,
-        "gender": workers.gender,
-        "payment_type": workers.payment_type,
-        "daily_payment": workers.daily_payment,
-        "languages": workers.languages,
-        "skills": workers.skills,
-        "location": workers.location,
-        "is_active": workers.is_active,
-        "created_at": workers.created_at,
-        "updated_at": workers.updated_at,
-        "feedbacks": feedbacks_data if feedbacks_data else None
-    }
+async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(get_async_db)):
+    stmt = (
+        select(models.Worker)
+        .options(
+            selectinload(models.Worker.feedbacks).selectinload(models.Feedback.user)
+        )
+        .filter(models.Worker.id == worker_id)
+    )
 
+    result = await db.execute(stmt)
+    worker = result.scalar_one_or_none()
+
+    if not worker:
+        raise HTTPException(status_code=404, detail="Worker not found")
+
+    # Rasm URL ni to'g'rilash
+    if worker.image:
+        worker.image = f"https://admin.ishbozor.uz{worker.image}"
+
+    # Istasangiz bu yerdan return uchun JSON ko‘rinishga aylantirib yuborish mumkin:
+    return {
+        "id": worker.id,
+        "name": worker.name,
+        "about": worker.about,
+        "image": worker.image,
+        "age": worker.age,
+        "phone": worker.phone,
+        "gender": worker.gender,
+        "payment_type": worker.payment_type,
+        "daily_payment": worker.daily_payment,
+        "languages": worker.get_languages_list(),
+        "skills": worker.get_skills_list(),
+        "location": worker.location,
+        "created_at": str(worker.created_at),
+        "feedbacks": [
+            {
+                "rate": fb.rate,
+                "text": fb.text,
+                "user": {
+                    "id": fb.user.id,
+                    "name": fb.user.name,
+                    "telegram_id": fb.user.telegram_id,
+                },
+            }
+            for fb in worker.feedbacks
+        ]
+    }
 
 
 @router.put("/{worker_id}", response_model=Worker)
@@ -283,7 +277,7 @@ async def update_worker(
     if skills is not None:
         worker.set_skills([skill.strip() for skill in skills.split(",")])
     if location is not None:
-        worker.set_location(location)
+        update_data["location"] = location
     if is_active is not None:
         update_data["is_active"] = is_active
 

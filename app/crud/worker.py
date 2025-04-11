@@ -1,6 +1,9 @@
+from http.client import HTTPException
 from typing import List, Optional, Dict, Any, Tuple
+from app import models
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy import func, or_, and_
 import math
 
@@ -252,3 +255,4 @@ async def get_all_skill_names(db: AsyncSession) -> List[str]:
     result = await db.execute(select(Skills.name))
     names = result.scalars().all()
     return names
+
