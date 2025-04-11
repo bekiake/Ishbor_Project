@@ -87,7 +87,7 @@ async def register_user(
             }
 
 
-    if user and user.is_worker==False:
+    if user and not user.is_worker:
         print("#################################")
         token = await generate_access_token(user.telegram_id) if hasattr(generate_access_token, '__call__') else generate_access_token(user.telegram_id)
         return {
