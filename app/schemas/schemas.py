@@ -61,6 +61,7 @@ class WorkerCreate(WorkerBase):
 class WorkerUpdate(BaseModel):
     """Worker yangilash uchun schema"""
     name: Optional[str] = None
+    about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
     gender: Optional[str] = None
