@@ -164,42 +164,43 @@ async def search_workers(
 async def filter_workers(
     skills: Optional[List[str]] = Query(None),         # ?skills=oshpaz&skills=haydovchi
     languages: Optional[List[str]] = Query(None),      # ?languages=rus&languages=ingliz
-    age_range: Optional[str] = None,                   # misol: 25-35
+    age_range: Optional[List[str]] = Query(None),      # ?age_range=25-35&age_range=40-50
     gender: Optional[str] = None,                      # "erkak", "ayol", "barchasi"
     db: AsyncSession = Depends(get_async_db)
 ):
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
-    # ➤ Skill bo‘yicha filter (har biri LIKE qilib tekshiriladi)
     # ➤ Skill bo‘yicha filter
     if skills and "barchasi" not in [s.lower() for s in skills]:
         skill_conditions = [models.Worker.skills.ilike(f"%{skill}%") for skill in skills]
-        stmt = stmt.where(and_(*skill_conditions))
+        stmt = stmt.where(or_(*skill_conditions))
 
     # ➤ Language bo‘yicha filter
     if languages and "barchasi" not in [l.lower() for l in languages]:
         lang_conditions = [models.Worker.languages.ilike(f"%{lang}%") for lang in languages]
-        stmt = stmt.where(and_(*lang_conditions))
+        stmt = stmt.where(or_(*lang_conditions))
 
     # ➤ Gender bo‘yicha filter
     if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
+    # ➤ Age range bo‘yicha filter (bir nechta oraliqlar)
+    if age_range and "barchasi" not in [a.lower() for a in age_range]:
+        age_conditions = []
+        for range_str in age_range:
+            try:
+                min_age, max_age = map(int, range_str.split("-"))
+                age_conditions.append(
+                    models.Worker.age.between(min_age, max_age)
+                )
+            except ValueError:
+                return {"error": f"age_range '{range_str}' must be like 25-35"}
+        stmt = stmt.where(or_(*age_conditions))
 
-    if age_range and age_range.lower() != "barchasi":
-        try:
-            min_age, max_age = map(int, age_range.split("-"))
-            stmt = stmt.where(models.Worker.age >= min_age, models.Worker.age <= max_age)
-        except ValueError:
-            return {"error": "age_range must be in format like 25-35"}
-
-
-    
     # ➤ So‘rovni bajarish
     result = await db.execute(stmt)
     workers = result.scalars().all()
 
-    # ➤ Image URL qo‘shish va JSON ko‘rinishga o‘tkazish
     return [
         {
             "id": w.id,
@@ -214,6 +215,7 @@ async def filter_workers(
         }
         for w in workers
     ]
+
 
 @router.get("/{worker_id}")
 async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(get_async_db)):
