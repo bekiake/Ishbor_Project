@@ -3,6 +3,7 @@ from fastapi import (
     APIRouter, Depends, HTTPException, status, Query,
     Form, UploadFile, File, Path, Body,
 )
+from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, or_
@@ -159,15 +160,18 @@ async def search_workers(
             worker.image = f"https://admin.ishbozor.uz{worker.image}"
     return workers
 
-
 @router.get("/workers/filter/")
 async def filter_workers(
-    skills: Optional[List[str]] = Query(None),         # ?skills=oshpaz&skills=haydovchi
-    languages: Optional[List[str]] = Query(None),      # ?languages=rus&languages=ingliz
-    age_range: Optional[List[str]] = Query(None),      # ?age_range=25-35&age_range=40-50
-    gender: Optional[str] = None,                      # "erkak", "ayol", "barchasi"
+    request: Request,
+    gender: Optional[str] = None,
     db: AsyncSession = Depends(get_async_db)
 ):
+    # skills[]=... dan qiymatlarni olish
+    raw_query_params = request.query_params
+    skills = raw_query_params.getlist("skills[]")
+    languages = raw_query_params.getlist("languages[]")
+    age_range = raw_query_params.getlist("age_range[]")
+
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
     # ➤ Skill bo‘yicha filter
@@ -184,7 +188,7 @@ async def filter_workers(
     if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
-    # ➤ Age range bo‘yicha filter (bir nechta oraliqlar)
+    # ➤ Age range bo‘yicha filter
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
         age_conditions = []
         for range_str in age_range:
@@ -197,7 +201,6 @@ async def filter_workers(
                 return {"error": f"age_range '{range_str}' must be like 25-35"}
         stmt = stmt.where(or_(*age_conditions))
 
-    # ➤ So‘rovni bajarish
     result = await db.execute(stmt)
     workers = result.scalars().all()
 
@@ -215,7 +218,6 @@ async def filter_workers(
         }
         for w in workers
     ]
-
 
 @router.get("/{worker_id}")
 async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(get_async_db)):
