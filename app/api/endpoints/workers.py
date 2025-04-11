@@ -171,28 +171,30 @@ async def filter_workers(
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
     # ➤ Skill bo‘yicha filter (har biri LIKE qilib tekshiriladi)
-    if skills:
+    # ➤ Skill bo‘yicha filter
+    if skills and "barchasi" not in [s.lower() for s in skills]:
         skill_conditions = [models.Worker.skills.ilike(f"%{skill}%") for skill in skills]
-        stmt = stmt.where(and_(*skill_conditions))  # Agar barcha ko'nikmalar bo'lishi kerak bo'lsa
-        # Agar birortasi bo'lsa kifoya desa: stmt = stmt.where(or_(*skill_conditions))
+        stmt = stmt.where(and_(*skill_conditions))
 
     # ➤ Language bo‘yicha filter
-    if languages:
+    if languages and "barchasi" not in [l.lower() for l in languages]:
         lang_conditions = [models.Worker.languages.ilike(f"%{lang}%") for lang in languages]
-        stmt = stmt.where(and_(*lang_conditions))  # yoki or_(*lang_conditions)
+        stmt = stmt.where(and_(*lang_conditions))
 
-    # ➤ Age range bo‘yicha filter
-    if age_range:
+    # ➤ Gender bo‘yicha filter
+    if gender and gender.lower() != "barchasi":
+        stmt = stmt.where(models.Worker.gender.ilike(gender))
+
+
+    if age_range and age_range.lower() != "barchasi":
         try:
             min_age, max_age = map(int, age_range.split("-"))
             stmt = stmt.where(models.Worker.age >= min_age, models.Worker.age <= max_age)
         except ValueError:
             return {"error": "age_range must be in format like 25-35"}
 
-    # ➤ Gender bo‘yicha filter
-    if gender and gender.lower() != "barchasi":
-        stmt = stmt.where(models.Worker.gender.ilike(gender))
 
+    
     # ➤ So‘rovni bajarish
     result = await db.execute(stmt)
     workers = result.scalars().all()
