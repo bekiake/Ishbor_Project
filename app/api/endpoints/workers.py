@@ -1,9 +1,8 @@
 from typing import Any, List, Optional, Dict
 from fastapi import (
-    APIRouter, Depends, HTTPException, status, Query,
+    APIRouter, Depends, HTTPException, Request, status, Query,
     Form, UploadFile, File, Path, Body,
 )
-from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, or_
@@ -34,11 +33,27 @@ async def read_workers(
         db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit, is_active=is_active)
+    result = []
     for worker in workers:
         if worker.image:  # Agar rasm bo‘lsa
-            worker.image = f"https://admin.ishbozor.uz{worker.image}"
+            image = f"https://admin.ishbozor.uz{worker.image}"
+        skills_list = [s.strip() for s in worker.skills.split(",")] if worker.skills else []
+        languages_list = [l.strip() for l in worker.languages.split(",")] if worker.languages else []
+        
+        result.append({
+        "id": worker.id,
+        "name": worker.name,
+        "age": worker.age,
+        "gender": worker.gender,
+        "phone": worker.phone,
+        "location": worker.location,
+        "skills": skills_list,
+        "languages": languages_list,
+        "image": image,
+        
+        })
 
-    return workers
+    return result
 
 @router.get("/me", response_model=dict)
 async def read_worker_me(
@@ -218,6 +233,7 @@ async def filter_workers(
         }
         for w in workers
     ]
+
 
 @router.get("/{worker_id}")
 async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(get_async_db)):
