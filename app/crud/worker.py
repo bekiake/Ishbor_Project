@@ -163,43 +163,9 @@ async def search_workers(
 ) -> List[Worker]:
     query = select(Worker).filter(Worker.is_active == True)
 
-    # Skill bo'yicha filtrlash
-    if search_params.skills:
-        skill_filters = [Worker.skills.ilike(f'%{skill}%') for skill in search_params.skills]
-        if skill_filters:
-            query = query.filter(or_(*skill_filters))
-
-    # Tillar bo'yicha filtrlash
-    if search_params.languages:
-        language_filters = [Worker.languages.ilike(f'%{language}%') for language in search_params.languages]
-        if language_filters:
-            query = query.filter(or_(*language_filters))
-
-    # To'lov turi bo'yicha filtrlash
-    if search_params.payment_type:
-        query = query.filter(
-            or_(
-                Worker.payment_type == search_params.payment_type,
-                Worker.payment_type == "barchasi"
-            )
-        )
-
-    # Jins bo'yicha filtrlash
-    if search_params.gender:
-        query = query.filter(Worker.gender == search_params.gender)
-
-    # To'lov miqdori bo'yicha filtrlash
-    if search_params.min_payment is not None:
-        query = query.filter(Worker.daily_payment >= search_params.min_payment)
-    if search_params.max_payment is not None:
-        query = query.filter(Worker.daily_payment <= search_params.max_payment)
-
     # Ism (name) bo'yicha filtrlash
     if search_params.name:
         query = query.filter(Worker.name.ilike(f'%{search_params.name}%'))
-
-    if search_params.location:
-        query = query.filter(Worker.location.ilike(f'%{search_params.location}%'))
     
     result = await db.execute(query)
     workers = result.scalars().all()

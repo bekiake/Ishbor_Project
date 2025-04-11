@@ -5,6 +5,7 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 import aiofiles  # Asinxron fayl operatsiyalari uchun
 import os
@@ -142,28 +143,12 @@ async def create_worker_with_image(
 @router.get("/search", response_model=List[Worker])
 async def search_workers(
         name: Optional[str] = Query(None, description="Ishchi ismi"),
-        skills: Optional[List[str]] = Query(None, description="Ko'nikmalar ro'yxati"),
-        languages: Optional[List[str]] = Query(None, description="Tillar ro'yxati"),
-        payment_type: Optional[str] = Query(None, description="To'lov turi"),
-        gender: Optional[str] = Query(None, description="Jinsi"),
-        min_payment: Optional[int] = Query(None, description="Minimal to'lov"),
-        max_payment: Optional[int] = Query(None, description="Maksimal to'lov"),
-        location: Optional[str] = Query(None, description="Lokatsiya"),
-        distance: Optional[float] = Query(None, description="Masofa (km)"),
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(20, description="Qaytariladigan ma'lumotlar soni"),
         db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     search_params = WorkerSearchParams(
-        name=name,
-        skills=skills,
-        languages=languages,
-        payment_type=payment_type,
-        gender=gender,
-        min_payment=min_payment,
-        max_payment=max_payment,
-        location=location,
-        distance=distance,
+        name=name
     )
 
     workers = await worker_crud.search_workers(
@@ -173,6 +158,60 @@ async def search_workers(
         if worker.image:
             worker.image = f"https://admin.ishbozor.uz{worker.image}"
     return workers
+
+
+@router.get("/workers/filter/")
+async def filter_workers(
+    skills: Optional[List[str]] = Query(None),         # ?skills=oshpaz&skills=haydovchi
+    languages: Optional[List[str]] = Query(None),      # ?languages=rus&languages=ingliz
+    age_range: Optional[str] = None,                   # misol: 25-35
+    gender: Optional[str] = None,                      # "erkak", "ayol", "barchasi"
+    db: AsyncSession = Depends(get_async_db)
+):
+    stmt = select(models.Worker).where(models.Worker.is_active == True)
+
+    # ➤ Skill bo‘yicha filter (har biri LIKE qilib tekshiriladi)
+    if skills:
+        skill_conditions = [models.Worker.skills.ilike(f"%{skill}%") for skill in skills]
+        stmt = stmt.where(and_(*skill_conditions))  # Agar barcha ko'nikmalar bo'lishi kerak bo'lsa
+        # Agar birortasi bo'lsa kifoya desa: stmt = stmt.where(or_(*skill_conditions))
+
+    # ➤ Language bo‘yicha filter
+    if languages:
+        lang_conditions = [models.Worker.languages.ilike(f"%{lang}%") for lang in languages]
+        stmt = stmt.where(and_(*lang_conditions))  # yoki or_(*lang_conditions)
+
+    # ➤ Age range bo‘yicha filter
+    if age_range:
+        try:
+            min_age, max_age = map(int, age_range.split("-"))
+            stmt = stmt.where(models.Worker.age >= min_age, models.Worker.age <= max_age)
+        except ValueError:
+            return {"error": "age_range must be in format like 25-35"}
+
+    # ➤ Gender bo‘yicha filter
+    if gender and gender.lower() != "barchasi":
+        stmt = stmt.where(models.Worker.gender.ilike(gender))
+
+    # ➤ So‘rovni bajarish
+    result = await db.execute(stmt)
+    workers = result.scalars().all()
+
+    # ➤ Image URL qo‘shish va JSON ko‘rinishga o‘tkazish
+    return [
+        {
+            "id": w.id,
+            "name": w.name,
+            "age": w.age,
+            "gender": w.gender,
+            "phone": w.phone,
+            "location": w.location,
+            "skills": w.get_skills_list(),
+            "languages": w.get_languages_list(),
+            "image": f"https://admin.ishbozor.uz{w.image}" if w.image else None,
+        }
+        for w in workers
+    ]
 
 @router.get("/{worker_id}")
 async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(get_async_db)):
