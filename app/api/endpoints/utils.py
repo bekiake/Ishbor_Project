@@ -14,7 +14,7 @@ import csv
 import json
 import os
 from pathlib import Path
-
+import openpyxl
 from app.database import get_db as get_async_db 
 from app.core.security import get_current_active_user
 from app.core.settings import settings
@@ -62,60 +62,70 @@ async def get_system_stats(
         "top_skills": top_skills,
         "top_languages": top_languages,
     }
-
 @router.post("/export/workers")
-async def export_workers_csv(
+async def export_workers_excel(
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(1000, description="Qaytariladigan ma'lumotlar soni"),
         db: AsyncSession = Depends(get_async_db),
         current_user: User = Depends(get_current_active_user),
 ) -> FileResponse:
     """
-    Ishchilar ro'yxatini CSV formatida eksport qilish
+    Ishchilar ro'yxatini Excel formatida eksport qilish
     """
     # Ishchilar ro'yxatini olish
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit)
 
     # Fayl nomi va yo'li
-    filename = "workers_export.csv"
+    filename = "workers_export.xlsx"
     file_path = os.path.join(os.getcwd(), filename)
 
-    # CSV fayl yaratish
-    fieldnames = [
-        "id", "telegram_id", "name", "about", "age", "phone", "gender",
-        "payment_type", "daily_payment", "languages", "skills",
-        "location", "image", "created_at", "updated_at", "is_active"
+    # Excel fayl yaratish
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Ishchilar"
+
+    # Ustun nomlari
+    headers = [
+        "ID", "Telegram ID", "Ism", "Haqida", "Yosh", "Telefon", "Jinsi",
+        "To'lov turi", "Kunlik to'lov", "Tillar", "Ko'nikmalar",
+        "Manzil", "Rasm", "Yaratilgan sana", "Yangilangan sana", "Faol"
     ]
 
-    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+    # Ustun nomlarini yozish
+    for col_num, header in enumerate(headers, 1):
+        cell = worksheet.cell(row=1, column=col_num)
+        cell.value = header
+        cell.font = openpyxl.styles.Font(bold=True)
+        # Ustun kengligini o'rnatish
+        worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_num)].width = 15
 
-        for worker in workers:
-            writer.writerow({
-                "id": worker.id,
-                "telegram_id": worker.telegram_id,
-                "name": worker.name,
-                "about": worker.about,
-                "age": worker.age,
-                "phone": worker.phone,
-                "gender": worker.gender,
-                "payment_type": worker.payment_type,
-                "daily_payment": worker.daily_payment,
-                "languages": worker.languages,
-                "skills": worker.skills,
-                "location": worker.location,
-                "image": worker.image,
-                "created_at": worker.created_at.isoformat(),
-                "updated_at": worker.updated_at.isoformat(),
-                "is_active": worker.is_active,
-            })
+    # Ma'lumotlarni yozish
+    for row_num, worker in enumerate(workers, 2):
+        worksheet.cell(row=row_num, column=1).value = worker.id
+        worksheet.cell(row=row_num, column=2).value = worker.telegram_id
+        worksheet.cell(row=row_num, column=3).value = worker.name
+        worksheet.cell(row=row_num, column=4).value = worker.about
+        worksheet.cell(row=row_num, column=5).value = worker.age
+        worksheet.cell(row=row_num, column=6).value = worker.phone
+        worksheet.cell(row=row_num, column=7).value = worker.gender
+        worksheet.cell(row=row_num, column=8).value = worker.payment_type
+        worksheet.cell(row=row_num, column=9).value = worker.daily_payment
+        worksheet.cell(row=row_num, column=10).value = worker.languages
+        worksheet.cell(row=row_num, column=11).value = worker.skills
+        worksheet.cell(row=row_num, column=12).value = worker.location
+        worksheet.cell(row=row_num, column=13).value = worker.image
+        worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat()
+        worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat()
+        worksheet.cell(row=row_num, column=16).value = "Ha" if worker.is_active else "Yo'q"
+
+    # Faylni saqlash
+    workbook.save(file_path)
 
     # Faylni FileResponse orqali qaytarish
     return FileResponse(
         path=file_path,
         filename=filename,
-        media_type="text/csv"
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 @router.get("/skills", response_model=List[str])
