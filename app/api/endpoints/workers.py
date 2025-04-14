@@ -205,7 +205,7 @@ async def filter_workers(
     # Name bo‘yicha filter
     if name:
     # Foydalanuvchi tomonidan kiritilgan name boyicha malakalarni qidirish
-        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for skill in skills]
+        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for name in skills]
         
         # Ismni qidirish
         name_condition = models.Worker.name.ilike(f"%{name}%")
