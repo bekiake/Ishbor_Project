@@ -154,45 +154,45 @@ async def create_worker_with_image(
 
     return db_worker
 
-@router.get("/search", response_model=List[WorkerSimpleSchema])
-async def search_workers(
-        name: Optional[str] = Query(None, description="Ishchi ismi"),
-        skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
-        limit: int = Query(20, description="Qaytariladigan ma'lumotlar soni"),
-        db: AsyncSession = Depends(get_async_db),
-) -> Any:
-    search_params = WorkerSearchParams(
-        name=name
-    )
+# @router.get("/search", response_model=List[WorkerSimpleSchema])
+# async def search_workers(
+#         name: Optional[str] = Query(None, description="Ishchi ismi"),
+#         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
+#         limit: int = Query(20, description="Qaytariladigan ma'lumotlar soni"),
+#         db: AsyncSession = Depends(get_async_db),
+# ) -> Any:
+#     search_params = WorkerSearchParams(
+#         name=name
+#     )
 
-    workers = await worker_crud.search_workers(
-        db, search_params=search_params, skip=skip, limit=limit
-    )
-    result = []
-    for worker in workers:
-        image = f"https://admin.ishbozor.uz{worker.image}" if worker.image else None
-        skills_list = [s.strip() for s in worker.skills.split(",")] if worker.skills else []
-        languages_list = [l.strip() for l in worker.languages.split(",")] if worker.languages else []
+#     workers = await worker_crud.search_workers(
+#         db, search_params=search_params, skip=skip, limit=limit
+#     )
+#     result = []
+#     for worker in workers:
+#         image = f"https://admin.ishbozor.uz{worker.image}" if worker.image else None
+#         skills_list = [s.strip() for s in worker.skills.split(",")] if worker.skills else []
+#         languages_list = [l.strip() for l in worker.languages.split(",")] if worker.languages else []
         
-        result.append(WorkerSimpleSchema(
-            id=worker.id,
-            name=worker.name,
-            age=worker.age,
-            gender=worker.gender,
-            phone=worker.phone,
-            location=worker.location,
-            skills=skills_list,
-            languages=languages_list,
-            image=image,
-        ))
+#         result.append(WorkerSimpleSchema(
+#             id=worker.id,
+#             name=worker.name,
+#             age=worker.age,
+#             gender=worker.gender,
+#             phone=worker.phone,
+#             location=worker.location,
+#             skills=skills_list,
+#             languages=languages_list,
+#             image=image,
+#         ))
 
-    return result
+#     return result
 
 @router.get("/workers/filter/")
 async def filter_workers(
     request: Request,
+    name: Optional[str],
     gender: Optional[str] = None,
-    name: Optional[str] = None,
     db: AsyncSession = Depends(get_async_db)
 ):
     raw_query_params = request.query_params
@@ -204,7 +204,14 @@ async def filter_workers(
 
     # Name bo‘yicha filter
     if name:
-        stmt = stmt.where(models.Worker.name.ilike(f"%{name}%"))
+    # Foydalanuvchi tomonidan kiritilgan name boyicha malakalarni qidirish
+        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for skill in skills]
+        
+        # Ismni qidirish
+        name_condition = models.Worker.name.ilike(f"%{name}%")
+        
+        # Shartlarni OR orqali birlashtiramiz
+        stmt = stmt.where(or_(*skill_conditions, name_condition))
 
     # Skills
     if skills and "barchasi" not in [s.lower() for s in skills]:

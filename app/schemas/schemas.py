@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, validator, root_validator, field_validato
 class UserBase(BaseModel):
     """User uchun asosiy ma'lumotlar"""
     telegram_id: str
-    name: Optional[str] = None
+    name: Optional[str]
     is_worker: bool = False
 
 
@@ -18,7 +18,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     """User yangilash uchun schema"""
-    name: Optional[str] = None
+    name: Optional[str]
 
 
 class UserInDBBase(UserBase):
@@ -53,7 +53,7 @@ class WorkerSimpleSchema(BaseModel):
 class WorkerBase(BaseModel):
     """Worker uchun asosiy ma'lumotlar"""
     telegram_id: str
-    name: Optional[str] = None
+    name: Optional[str]
     about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
@@ -72,7 +72,7 @@ class WorkerCreate(WorkerBase):
 
 class WorkerUpdate(BaseModel):
     """Worker yangilash uchun schema"""
-    name: Optional[str] = None
+    name: Optional[str]
     about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
@@ -149,7 +149,7 @@ class Feedbackss(BaseModel):
     text: str
     create_at: Optional[datetime] = None  # Yaratilish sanasi
     update_at: Optional[datetime] = None  # Yangilanish sanasi
-    user_name: Optional[str] = None  # Foydalanuvchi nomi (agar kerak bo'lsa)
+    user_name: Optional[str] # Foydalanuvchi nomi (agar kerak bo'lsa)
 
     class Config:
         orm_mode = True
@@ -228,7 +228,7 @@ class TokenPayload(BaseModel):
 # Search schemas
 class WorkerSearchParams(BaseModel):
     """Worker qidirish parametrlari"""
-    name: Optional[str] = None
+    name: Optional[str]
     skills: Optional[List[str]] = None
     languages: Optional[List[str]] = None
     payment_type: Optional[str] = None
@@ -296,7 +296,7 @@ class UserOut(BaseModel):
     id: int
     telegram_id: str
     is_worker: bool
-    name: Optional[str] = None
+    name: Optional[str]
     created: Optional[datetime] = None
     updated: Optional[datetime] = None
 
@@ -308,7 +308,7 @@ class UserOut(BaseModel):
 class WorkerOut(BaseModel):
     id: int
     telegram_id: str
-    name: Optional[str] = None
+    name: Optional[str]
     image: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
