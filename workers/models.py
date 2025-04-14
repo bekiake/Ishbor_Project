@@ -9,7 +9,7 @@ class User(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.name if self.name else "Unknown User"
 
 
 class Skills(models.Model):

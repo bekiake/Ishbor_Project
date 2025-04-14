@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ch_l$asqwt38h!pp%*yc4b3pdcpz24zkda=i8u!^-la*4)d6+2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["admin.ishbozor.uz"]
 
@@ -88,7 +88,7 @@ DATABASES = {
     }
 }
 
-CSRF_COOKIE_SECURE = True  # faqat HTTPS orqali yuborish
+CSRF_COOKIE_SECURE = False  # faqat HTTPS orqali yuborish
 CSRF_COOKIE_DOMAIN = ".ishbozor.uz"  # Agar barcha subdomenlar uchun kerak bo'lsa
 CSRF_COOKIE_NAME = "csrftoken"  # CSRF token nomi
 
