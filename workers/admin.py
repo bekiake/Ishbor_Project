@@ -20,7 +20,7 @@ class WorkerAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
 
-@admin.register(Feedback)
+admin.site.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     form = FeedbackForm
     list_display = ('id', 'worker_name', 'user', 'rate', 'text', 'create_at')  # worker_name ni qo‘shish
