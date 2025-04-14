@@ -82,7 +82,7 @@ class Feedback(models.Model):
     update_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.worker.name if self.worker else 'No Worker'} - {self.user.name if self.user else 'No User'} - {self.rate} - {self.text or 'No comment'}"
+        return f"{self.worker} - {self.user} - {self.rate} - {self.text or ''}"
 
     
 
