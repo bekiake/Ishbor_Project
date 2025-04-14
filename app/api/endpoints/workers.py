@@ -190,7 +190,7 @@ async def create_worker_with_image(
 @router.get("/workers/filter/")
 async def filter_workers(
     request: Request,
-    name: Optional[str],
+    name: Optional[str] = None,
     gender: Optional[str] = None,
     db: AsyncSession = Depends(get_async_db)
 ):
