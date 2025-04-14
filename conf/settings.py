@@ -88,7 +88,17 @@ DATABASES = {
     }
 }
 
+CSRF_COOKIE_SECURE = True  # faqat HTTPS orqali yuborish
+CSRF_COOKIE_DOMAIN = ".ishbozor.uz"  # Agar barcha subdomenlar uchun kerak bo'lsa
+CSRF_COOKIE_NAME = "csrftoken"  # CSRF token nomi
 
+# CSRF uchun trusted originlar
+CSRF_TRUSTED_ORIGINS = [
+    'https://admin.ishbozor.uz',  # Trust originni qo'shish
+]
+
+# CSRF so'rovlarini boshqarish
+CSRF_USE_SESSIONS = True  # Seans orqali CSRF tokenlarini saqlash
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
