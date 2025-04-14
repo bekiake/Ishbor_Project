@@ -207,10 +207,10 @@ async def filter_workers(
         name_condition = models.Worker.name.ilike(f"%{name}%")
         
         # Skill nomi bo‘yicha qidiruv
-        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for skill in skills]
+        skill_condition = models.Worker.skills.ilike(f"%{name}%")
         
         # Shartlarni OR orqali birlashtiramiz
-        stmt = stmt.where(or_(*skill_conditions, name_condition))
+        stmt = stmt.where(or_(name_condition, skill_condition))
 
     # Skills
     if skills and "barchasi" not in [s.lower() for s in skills]:
