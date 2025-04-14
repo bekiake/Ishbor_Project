@@ -23,7 +23,7 @@ class WorkerAdmin(admin.ModelAdmin):
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     form = FeedbackForm
-    list_display = ['id', 'worker_name', 'user', 'rate', 'text', 'create_at']  # worker_name ni qo‘shish
+    list_display = ['id', 'worker__name', 'user__name', 'rate', 'text', 'create_at']  # worker_name ni qo‘shish
     search_fields = ('worker__name', 'user__name', 'text')
     list_filter = ('rate',)
     # ordering = ('-create_at',)
