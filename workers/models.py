@@ -80,9 +80,5 @@ class Feedback(models.Model):
     text = models.TextField(max_length=255, null=True, blank=True, verbose_name='Text')
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.worker} - {self.user} - {self.rate} - {self.text or ''}"
-
     
 
