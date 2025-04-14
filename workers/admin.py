@@ -20,24 +20,24 @@ class WorkerAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
 
-admin.site.register(Feedback)
+@admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     form = FeedbackForm
     list_display = ('id', 'worker_name', 'user', 'rate', 'text', 'create_at')  # worker_name ni qo‘shish
     search_fields = ('worker__name', 'user__name', 'text')
     list_filter = ('rate',)
-    ordering = ('-create_at',)
+    # ordering = ('-create_at',)
 
-    fieldsets = (
-        (None, {
-            'fields': ('worker', 'user', 'rate', 'text')
-        }),
-    )
+    # fieldsets = (
+    #     (None, {
+    #         'fields': ('worker', 'user', 'rate', 'text')
+    #     }),
+    # )
 
-    def worker_name(self, obj):
-        return obj.worker.name if obj.worker else None  # worker.name ni ko‘rsatish
-    worker_name.admin_order_field = 'worker__name'  # Sort qilish uchun
-    worker_name.short_description = 'Worker Name'  # Sarlavha
+    # def worker_name(self, obj):
+    #     return obj.worker.name if obj.worker else None  # worker.name ni ko‘rsatish
+    # worker_name.admin_order_field = 'worker__name'  # Sort qilish uchun
+    # worker_name.short_description = 'Worker Name'  # Sarlavha
 
 
 @admin.register(Skills)
