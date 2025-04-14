@@ -187,7 +187,6 @@ async def create_worker_with_image(
 #         ))
 
 #     return result
-
 @router.get("/workers/filter/")
 async def filter_workers(
     request: Request,
@@ -202,13 +201,13 @@ async def filter_workers(
 
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
-    # Name bo‘yicha filter
+    # Name yoki skill bo‘yicha filter
     if name:
-    # Foydalanuvchi tomonidan kiritilgan name boyicha malakalarni qidirish
-        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for name in skills]
-        
-        # Ismni qidirish
+        # Agar name kiritilgan bo'lsa, uni ism yoki skill nomi sifatida tekshiramiz
         name_condition = models.Worker.name.ilike(f"%{name}%")
+        
+        # Skill nomi bo‘yicha qidiruv
+        skill_conditions = [models.Worker.skills.ilike(f"%{name}%") for skill in skills]
         
         # Shartlarni OR orqali birlashtiramiz
         stmt = stmt.where(or_(*skill_conditions, name_condition))
@@ -257,6 +256,7 @@ async def filter_workers(
         }
         for w in workers
     ]
+
 
 
 @router.get("/{worker_id}")
