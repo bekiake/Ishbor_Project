@@ -4,7 +4,9 @@ Utilities API endpointlari
 Turli yordamchi API endpointlari
 """
 from typing import Any, List, Dict
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import io
@@ -61,56 +63,60 @@ async def get_system_stats(
         "top_languages": top_languages,
     }
 
-
 @router.post("/export/workers")
 async def export_workers_csv(
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(1000, description="Qaytariladigan ma'lumotlar soni"),
         db: AsyncSession = Depends(get_async_db),
         current_user: User = Depends(get_current_active_user),
-) -> Any:
+) -> FileResponse:
     """
     Ishchilar ro'yxatini CSV formatida eksport qilish
     """
     # Ishchilar ro'yxatini olish
     workers = await worker_crud.get_workers(db, skip=skip, limit=limit)
 
+    # Fayl nomi va yo'li
+    filename = "workers_export.csv"
+    file_path = os.path.join(os.getcwd(), filename)
+
     # CSV fayl yaratish
-    csv_content = io.StringIO()
     fieldnames = [
-        "id", "telegram_id", "name", "about","age", "phone", "gender",
+        "id", "telegram_id", "name", "about", "age", "phone", "gender",
         "payment_type", "daily_payment", "languages", "skills",
         "location", "image", "created_at", "updated_at", "is_active"
     ]
 
-    writer = csv.DictWriter(csv_content, fieldnames=fieldnames)
-    writer.writeheader()
+    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
 
-    for worker in workers:
-        writer.writerow({
-            "id": worker.id,
-            "telegram_id": worker.telegram_id,
-            "name": worker.name,
-            "about": worker.about,
-            "age": worker.age,
-            "phone": worker.phone,
-            "gender": worker.gender,
-            "payment_type": worker.payment_type,
-            "daily_payment": worker.daily_payment,
-            "languages": worker.languages,
-            "skills": worker.skills,
-            "location": worker.location,
-            "image": worker.image,
-            "created_at": worker.created_at.isoformat(),
-            "updated_at": worker.updated_at.isoformat(),
-            "is_active": worker.is_active,
-        })
+        for worker in workers:
+            writer.writerow({
+                "id": worker.id,
+                "telegram_id": worker.telegram_id,
+                "name": worker.name,
+                "about": worker.about,
+                "age": worker.age,
+                "phone": worker.phone,
+                "gender": worker.gender,
+                "payment_type": worker.payment_type,
+                "daily_payment": worker.daily_payment,
+                "languages": worker.languages,
+                "skills": worker.skills,
+                "location": worker.location,
+                "image": worker.image,
+                "created_at": worker.created_at.isoformat(),
+                "updated_at": worker.updated_at.isoformat(),
+                "is_active": worker.is_active,
+            })
 
-    return {
-        "filename": "workers_export.csv",
-        "content": csv_content.getvalue(),
-        "media_type": "text/csv",
-    }
+    # Faylni FileResponse orqali qaytarish
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="text/csv"
+    )
 
 @router.get("/skills", response_model=List[str])
 async def get_all_skills(db: AsyncSession = Depends(get_async_db)):
