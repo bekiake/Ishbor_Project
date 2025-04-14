@@ -224,9 +224,8 @@ async def filter_workers(
         stmt = stmt.where(or_(*lang_conditions))
 
     # Gender
-    if gender and gender.lower() == "barchasi":
+    if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
-
     # Age Range
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
         age_conditions = []
