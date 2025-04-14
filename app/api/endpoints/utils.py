@@ -67,7 +67,6 @@ async def export_workers_excel(
         skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
         limit: int = Query(1000, description="Qaytariladigan ma'lumotlar soni"),
         db: AsyncSession = Depends(get_async_db),
-        current_user: User = Depends(get_current_active_user),
 ) -> FileResponse:
     """
     Ishchilar ro'yxatini Excel formatida eksport qilish
