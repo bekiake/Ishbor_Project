@@ -187,6 +187,7 @@ async def create_worker_with_image(
 #         ))
 
 #     return result
+
 @router.get("/workers/filter/")
 async def filter_workers(
     request: Request,
@@ -223,7 +224,7 @@ async def filter_workers(
         stmt = stmt.where(or_(*lang_conditions))
 
     # Gender
-    if gender and gender.lower() != "barchasi":
+    if gender and gender.lower() == "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
     # Age Range
