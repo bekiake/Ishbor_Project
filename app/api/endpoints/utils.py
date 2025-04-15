@@ -19,6 +19,7 @@ from app.database import get_db as get_async_db
 from app.core.security import get_current_active_user
 from app.core.settings import settings
 from app.models.models import User
+from app.models import models
 from app.crud import worker as worker_crud
 from app.crud import feedback as feedback_crud
 from app.crud import user as user_crud
@@ -62,17 +63,18 @@ async def get_system_stats(
         "top_skills": top_skills,
         "top_languages": top_languages,
     }
-@router.post("/export/workers")
+    
+@router.get("/export/workers")
 async def export_workers_excel(
-        skip: int = Query(0, description="O'tkazib yuborish uchun ma'lumotlar soni"),
-        limit: int = Query(1000, description="Qaytariladigan ma'lumotlar soni"),
-        db: AsyncSession = Depends(get_async_db),
+        db: AsyncSession = Depends(get_async_db)
 ) -> FileResponse:
     """
-    Ishchilar ro'yxatini Excel formatida eksport qilish
+    Ishchilar ro'yxatini Excel formatida eksport qilish (ommaviy endpoint)
     """
-    # Ishchilar ro'yxatini olish
-    workers = await worker_crud.get_workers(db, skip=skip, limit=limit)
+    # Barcha ishchilarni olish (skip va limit parametrlari yo'q)
+    stmt = select(models.Worker)
+    result = await db.execute(stmt)
+    workers = result.scalars().all()
 
     # Fayl nomi va yo'li
     filename = "workers_export.xlsx"
@@ -113,8 +115,8 @@ async def export_workers_excel(
         worksheet.cell(row=row_num, column=11).value = worker.skills
         worksheet.cell(row=row_num, column=12).value = worker.location
         worksheet.cell(row=row_num, column=13).value = worker.image
-        worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat()
-        worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat()
+        worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat() if worker.created_at else ""
+        worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat() if worker.updated_at else ""
         worksheet.cell(row=row_num, column=16).value = "Ha" if worker.is_active else "Yo'q"
 
     # Faylni saqlash
