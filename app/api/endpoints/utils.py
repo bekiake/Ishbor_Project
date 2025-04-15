@@ -15,6 +15,8 @@ import json
 import os
 from pathlib import Path
 import openpyxl
+from io import BytesIO
+from fastapi import Response, HTTPException
 from app.database import get_db as get_async_db 
 from app.core.security import get_current_active_user
 from app.core.settings import settings
@@ -64,71 +66,84 @@ async def get_system_stats(
         "top_languages": top_languages,
     }
     
+    
 @router.get("/export/workers")
 async def export_workers_excel(
         db: AsyncSession = Depends(get_async_db)
-) -> FileResponse:
+) -> Response:
     """
     Ishchilar ro'yxatini Excel formatida eksport qilish (ommaviy endpoint)
     """
-    # Barcha ishchilarni olish (skip va limit parametrlari yo'q)
-    stmt = select(models.Worker)
-    result = await db.execute(stmt)
-    workers = result.scalars().all()
+    try:
+        # Barcha ishchilarni olish
+        stmt = select(models.Worker)
+        result = await db.execute(stmt)
+        workers = result.scalars().all()
 
-    # Fayl nomi va yo'li
-    filename = "workers_export.xlsx"
-    file_path = os.path.join(os.getcwd(), filename)
+        # Excel faylini xotiraga yaratish (disk o'rniga)
+        output = BytesIO()
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Ishchilar"
 
-    # Excel fayl yaratish
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.active
-    worksheet.title = "Ishchilar"
+        # Ustun nomlari
+        headers = [
+            "ID", "Telegram ID", "Ism", "Haqida", "Yosh", "Telefon", "Jinsi",
+            "To'lov turi", "Kunlik to'lov", "Tillar", "Ko'nikmalar",
+            "Manzil", "Rasm", "Yaratilgan sana", "Yangilangan sana", "Faol"
+        ]
 
-    # Ustun nomlari
-    headers = [
-        "ID", "Telegram ID", "Ism", "Haqida", "Yosh", "Telefon", "Jinsi",
-        "To'lov turi", "Kunlik to'lov", "Tillar", "Ko'nikmalar",
-        "Manzil", "Rasm", "Yaratilgan sana", "Yangilangan sana", "Faol"
-    ]
+        # Ustun nomlarini yozish
+        for col_num, header in enumerate(headers, 1):
+            cell = worksheet.cell(row=1, column=col_num)
+            cell.value = header
+            cell.font = openpyxl.styles.Font(bold=True)
+            # Ustun kengligini o'rnatish
+            worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_num)].width = 15
 
-    # Ustun nomlarini yozish
-    for col_num, header in enumerate(headers, 1):
-        cell = worksheet.cell(row=1, column=col_num)
-        cell.value = header
-        cell.font = openpyxl.styles.Font(bold=True)
-        # Ustun kengligini o'rnatish
-        worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_num)].width = 15
+        # Ma'lumotlarni yozish
+        for row_num, worker in enumerate(workers, 2):
+            try:
+                worksheet.cell(row=row_num, column=1).value = worker.id
+                worksheet.cell(row=row_num, column=2).value = worker.telegram_id
+                worksheet.cell(row=row_num, column=3).value = worker.name
+                worksheet.cell(row=row_num, column=4).value = worker.about
+                worksheet.cell(row=row_num, column=5).value = worker.age
+                worksheet.cell(row=row_num, column=6).value = worker.phone
+                worksheet.cell(row=row_num, column=7).value = worker.gender
+                worksheet.cell(row=row_num, column=8).value = worker.payment_type
+                worksheet.cell(row=row_num, column=9).value = worker.daily_payment
+                worksheet.cell(row=row_num, column=10).value = worker.languages
+                worksheet.cell(row=row_num, column=11).value = worker.skills
+                worksheet.cell(row=row_num, column=12).value = worker.location
+                worksheet.cell(row=row_num, column=13).value = worker.image
+                worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat() if worker.created_at else ""
+                worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat() if worker.updated_at else ""
+                worksheet.cell(row=row_num, column=16).value = "Ha" if worker.is_active else "Yo'q"
+            except Exception as e:
+                # Qatorlardagi alohida xatolar butun jarayonni to'xtatmasligi kerak
+                continue
 
-    # Ma'lumotlarni yozish
-    for row_num, worker in enumerate(workers, 2):
-        worksheet.cell(row=row_num, column=1).value = worker.id
-        worksheet.cell(row=row_num, column=2).value = worker.telegram_id
-        worksheet.cell(row=row_num, column=3).value = worker.name
-        worksheet.cell(row=row_num, column=4).value = worker.about
-        worksheet.cell(row=row_num, column=5).value = worker.age
-        worksheet.cell(row=row_num, column=6).value = worker.phone
-        worksheet.cell(row=row_num, column=7).value = worker.gender
-        worksheet.cell(row=row_num, column=8).value = worker.payment_type
-        worksheet.cell(row=row_num, column=9).value = worker.daily_payment
-        worksheet.cell(row=row_num, column=10).value = worker.languages
-        worksheet.cell(row=row_num, column=11).value = worker.skills
-        worksheet.cell(row=row_num, column=12).value = worker.location
-        worksheet.cell(row=row_num, column=13).value = worker.image
-        worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat() if worker.created_at else ""
-        worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat() if worker.updated_at else ""
-        worksheet.cell(row=row_num, column=16).value = "Ha" if worker.is_active else "Yo'q"
-
-    # Faylni saqlash
-    workbook.save(file_path)
-
-    # Faylni FileResponse orqali qaytarish
-    return FileResponse(
-        path=file_path,
-        filename=filename,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
+        # Faylni BytesIO obyektiga saqlash
+        workbook.save(output)
+        output.seek(0)  # Pozitsiyasini boshiga qaytarish
+        
+        # Response qaytarish
+        headers = {
+            'Content-Disposition': 'attachment; filename="workers_export.xlsx"',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+        return Response(content=output.getvalue(), headers=headers)
+    
+    except Exception as e:
+        # Xatoni log qilish
+        import logging
+        logging.error(f"Export workers error: {str(e)}")
+        
+        # Xato haqida xabar qaytarish
+        raise HTTPException(status_code=500, detail=f"Export yaratishda xatolik: {str(e)}")
+    
+    
 @router.get("/skills", response_model=List[str])
 async def get_all_skills(db: AsyncSession = Depends(get_async_db)):
     return await worker_crud.get_all_skill_names(db)
