@@ -44,7 +44,7 @@ class Worker(models.Model):
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
     about = models.TextField(max_length=255, null=True, blank=True, verbose_name='About')
-    image = models.ImageField(upload_to='uploads/workers/', null=True, blank=True)
+    image = models.ImageField(upload_to='media/uploads/workers/', null=True, blank=True)
     age = models.IntegerField(null=True, blank=True, verbose_name='Age')
     phone = models.CharField(max_length=255,null=True, blank=True, verbose_name='Phone', unique=True)
     gender = models.CharField(max_length=255, choices=GENDER_CHOICES, null=True, blank=True, verbose_name='Gender')
