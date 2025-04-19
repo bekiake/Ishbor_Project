@@ -42,6 +42,7 @@ class WorkerSimpleSchema(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
     phone: Optional[str] = None
+    time_type: Optional[str] = None
     location: Optional[str] = None
     skills: List[str]
     languages: List[str]
