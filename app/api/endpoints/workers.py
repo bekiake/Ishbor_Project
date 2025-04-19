@@ -93,6 +93,7 @@ async def create_worker_with_image(
         phone: Optional[str] = Form(None),
         gender: Optional[str] = Form(None),
         payment_type: Optional[str] = Form("barchasi"),
+        time_type: Optional[str] = Form("barchasi"),
         daily_payment: Optional[int] = Form(None),
         languages: Optional[str] = Form(None),
         skills: Optional[str] = Form(None),
@@ -124,6 +125,7 @@ async def create_worker_with_image(
         phone=phone,
         gender=gender,
         payment_type=payment_type,
+        time_type=time_type,
         daily_payment=daily_payment,
         languages=languages,
         skills=skills,
@@ -199,7 +201,7 @@ async def filter_workers(
     skills = raw_query_params.getlist("skills[]")
     languages = raw_query_params.getlist("languages[]")
     age_range = raw_query_params.getlist("age_range[]")
-
+    time_type = raw_query_params.getlist("time_type[]")
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
     # Name yoki skill bo‘yicha filter
@@ -240,6 +242,12 @@ async def filter_workers(
                 return {"error": f"age_range '{range_str}' must be like 25-35"}
         stmt = stmt.where(or_(*age_conditions))
 
+    if time_type and "barchasi" not in [t.lower() for t in time_type]:
+        time_conditions = [models.Worker.time_type.ilike(t) for t in time_type]
+        stmt = stmt.where(or_(*time_conditions))
+    
+    
+    
     result = await db.execute(stmt)
     workers = result.scalars().all()
 
@@ -250,6 +258,7 @@ async def filter_workers(
             "age": w.age,
             "gender": w.gender,
             "phone": w.phone,
+            "time_type": w.time_type,
             "location": w.location,
             "skills": w.get_skills_list(),
             "languages": w.get_languages_list(),
@@ -290,6 +299,7 @@ async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(g
         "phone": worker.phone,
         "gender": worker.gender,
         "payment_type": worker.payment_type,
+        "time_type": worker.time_type,
         "daily_payment": worker.daily_payment,
         "languages": worker.get_languages_list(),
         "skills": worker.get_skills_list(),
@@ -319,6 +329,7 @@ async def update_worker(
         phone: Optional[str] = Form(None),
         gender: Optional[str] = Form(None),
         payment_type: Optional[str] = Form(None),
+        time_type: Optional[str] = Form(None),
         daily_payment: Optional[int] = Form(None),
         languages: Optional[str] = Form(None),
         skills: Optional[str] = Form(None),
@@ -344,6 +355,8 @@ async def update_worker(
             )
 
     update_data = {}
+    if time_type is not None:
+        update_data["time_type"] = time_type
     if name is not None:
         update_data["name"] = name
     if about is not None:

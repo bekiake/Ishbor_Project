@@ -47,6 +47,7 @@ async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
         phone=worker.phone,
         gender=worker.gender,
         payment_type=worker.payment_type,
+        time_type=worker.time_type,
         daily_payment=worker.daily_payment,
         languages=worker.languages,
         skills=worker.skills,

@@ -37,6 +37,7 @@ class Worker(Base):
     phone = Column(String(255), nullable=True, unique=True)
     gender = Column(String(255), nullable=True)
     payment_type = Column(String(255), nullable=True, default="barchasi")
+    time_type = Column(String(255), nullable=True, default="barchasi")
     daily_payment = Column(Integer, nullable=True)
     languages = Column(String(255), nullable=True)
     skills = Column(Text, nullable=True)

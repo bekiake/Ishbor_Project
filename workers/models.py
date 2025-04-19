@@ -31,6 +31,15 @@ class Worker(models.Model):
         ('male','Male'),
         ('female','Female')
     )
+    
+    TIME_CHOICES = (
+        ('kunlik','Kunlik'),
+        ('soatlik','Soatlik'),
+        ('oylik','Oylik'),
+        ('haftalik','Haftalik'),
+        ('barchasi','Barchasi')
+    )
+    
 
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
@@ -40,6 +49,7 @@ class Worker(models.Model):
     phone = models.CharField(max_length=255,null=True, blank=True, verbose_name='Phone', unique=True)
     gender = models.CharField(max_length=255, choices=GENDER_CHOICES, null=True, blank=True, verbose_name='Gender')
     payment_type = models.CharField(max_length=255, choices=PAYMENT_CHOICES, default='barchasi', null=True, blank=True, verbose_name='Payment Type')
+    time_type = models.CharField(max_length=255, choices=TIME_CHOICES, default='barchasi', null=True, blank=True, verbose_name='Time Type')
     daily_payment = models.IntegerField(null=True, blank=True, verbose_name='Daily Payment')
     languages = models.CharField(max_length=255, null=True, blank=True, verbose_name='Languages')
     skills = models.TextField(max_length=255, null=True, blank=True, verbose_name='Skills')

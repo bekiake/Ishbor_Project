@@ -59,6 +59,7 @@ class WorkerBase(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     payment_type: Optional[str] = "barchasi"
+    time_type: Optional[str] = "barchasi"
     daily_payment: Optional[int] = None
     languages: Optional[str] = None
     skills: Optional[str] = None
@@ -78,6 +79,7 @@ class WorkerUpdate(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     payment_type: Optional[str] = None
+    time_type: Optional[str] = None
     daily_payment: Optional[int] = None
     languages: Optional[str] = None
     skills: Optional[str] = None
