@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-
+from sqlalchemy import select, func
 from app.models.models import User
 from app.schemas.schemas import UserCreate, UserUpdate
 
@@ -77,8 +77,10 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
 
 # Get the total count of users
 async def get_user_count(db: AsyncSession) -> int:
-    result = await db.execute(select(User))
-    return result.scalars().count()
+    result = await db.execute(
+        select(func.count(User.id))  # SQL COUNT(id)
+    )
+    return result.scalar() or 0
 
 
 # Get the count of active users (you may want to modify the logic if there's an 'is_active' column)
