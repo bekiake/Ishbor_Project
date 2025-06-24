@@ -63,12 +63,9 @@ class Worker(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='Active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    disability_degree = models.CharField(
-        max_length = 2,
-        choices = DISABILITY_CHOICES,
-        default = 'no',
-        verbose_name = 'Nogironlik darajasi'
-    )
+    disability_degree = models.CharField(max_length = 2,choices = DISABILITY_CHOICES,default = 'no',verbose_name = 'Nogironlik darajasi')
+    aliment_payer=models.BooleanField(default=False,verbose_name='Aliment Payer')
+    aliment_payer_id = models.CharField(max_length=100,null=True, blank=True, verbose_name='Aliment Payer ID')
 
     def __str__(self):
         return self.name if self.name else "Unknown Worker"
@@ -107,3 +104,11 @@ class Feedback(models.Model):
     update_at = models.DateTimeField(auto_now=True)
     
 
+class News(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
+    title = models.CharField(max_length=255, null=True, blank=True, verbose_name='Title')
+    description = models.TextField(max_length=255, null=True, blank=True, verbose_name='Description')
+    image = models.ImageField(upload_to='media/uploads/news/', null=True, blank=True)
+
+    def __str__(self):
+        return self.name if self.name else "Unknown News"

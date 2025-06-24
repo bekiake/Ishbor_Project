@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, Worker, Feedback, Skills
+from .models import User, Worker, Feedback, Skills,News
 from .forms import FeedbackForm
 
 
@@ -44,4 +44,10 @@ class FeedbackAdmin(admin.ModelAdmin):
 class SkillsAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')  # 'name' yoki o'zingiz istagan maydonlar
     search_fields = ('name',)  # 'name' ustida qidiruv
+    ordering = ('name',)
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ('name','title')
+    search_fields = ('name',)
     ordering = ('name',)

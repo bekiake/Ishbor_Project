@@ -70,6 +70,8 @@ class WorkerBase(BaseModel):
     skills: Optional[str] = None
     location: Optional[str] = None
     disability_degree: Optional[str] = None  # Yangi maydon
+    aliment_payer: Optional[str] = None
+    aliment_payer_id: Optional[str] = None
 
 
 class WorkerCreate(WorkerBase):
@@ -91,6 +93,8 @@ class WorkerUpdate(BaseModel):
     skills: Optional[str] = None
     location: Optional[str] = None
     disability_degree: Optional[str] = None  # Yangi maydon
+    aliment_payer: Optional[bool] = None
+
 
 
 class WorkerLocation(BaseModel):
@@ -339,3 +343,18 @@ class WorkerOut(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class NewsBase(BaseModel):
+    name: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    image: Optional[str]
+
+class NewsCreate(NewsBase):
+    pass
+
+class NewsRead(NewsBase):
+    id: int
+
+    class Config:
+        from_attributes = True  # SQLAlchemy bilan ishlashi uchun

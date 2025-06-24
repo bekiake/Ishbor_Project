@@ -87,6 +87,8 @@ async def read_worker_me(
         "image": f"https://admin.ishbozor.uz{worker.image}",
         "is_active": worker.is_active,
         "disability_degree": worker.disability_degree,  # Yangi maydon qo'shildi
+        "aliment_payer": worker.aliment_payer,
+        "aliment_payer_id": worker.aliment_payer_id,
     }
     return worker_data
 
@@ -106,6 +108,8 @@ async def create_worker_with_image(
         skills: Optional[str] = Form(None),
         location: Optional[str] = Form(None),
         disability_degree: Optional[str] = Form(None),  # Yangi maydon qo'shildi
+        aliment_payer: Optional[bool] = Form(None),
+        aliment_payer_id: Optional[str] = Form(None),
         image: Optional[UploadFile] = File(None),
         db: AsyncSession = Depends(get_async_db),
         current_user: models.User = Depends(get_current_active_user),
@@ -139,6 +143,8 @@ async def create_worker_with_image(
         skills = skills,
         location = location,
         disability_degree = disability_degree,  # Yangi maydon qo'shildi
+        aliment_payer=aliment_payer,
+        aliment_payer_id = aliment_payer_id,
     )
 
     db_worker = await worker_crud.create_worker(db = db, worker = worker_data)
@@ -172,6 +178,7 @@ async def filter_workers(
         name: Optional[str] = None,
         gender: Optional[str] = None,
         disability_degree: Optional[str] = None,  # Yangi filter parametri qo'shildi
+        aliment_payer: Optional[str] = None,
         db: AsyncSession = Depends(get_async_db)
 ):
     raw_query_params = request.query_params
@@ -210,7 +217,8 @@ async def filter_workers(
     # Disability Degree filter - yangi qo'shildi
     if disability_degree and disability_degree.lower() != "barchasi":
         stmt = stmt.where(models.Worker.disability_degree.ilike(disability_degree))
-
+    if aliment_payer and aliment_payer.lower() != "barchasi":
+        stmt = stmt.where(models.Worker.aliment_payer.ilike(aliment_payer))
     # Age Range
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
         age_conditions = []
@@ -244,6 +252,7 @@ async def filter_workers(
             "languages": w.get_languages_list(),
             "image": f"https://admin.ishbozor.uz{w.image}" if w.image else None,
             "disability_degree": w.disability_degree,  # Yangi maydon qo'shildi
+            "aliment_payer":w.aliment_payer,
         }
         for w in workers
     ]
@@ -285,6 +294,7 @@ async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(g
         "skills": worker.get_skills_list(),
         "location": worker.location,
         "disability_degree": worker.disability_degree,  # Yangi maydon qo'shildi
+        "aliment_payer": worker.aliment_payer,
         "created_at": str(worker.created_at),
         "feedbacks": [
             {
@@ -318,6 +328,8 @@ async def update_worker(
         disability_degree: Optional[str] = Form(None),  # Yangi maydon qo'shildi
         image: Optional[UploadFile] = File(None),
         is_active: Optional[bool] = Form(None),
+        aliment_payer: Optional[bool] = Form(None),
+        aliment_payer_id: Optional[str] = Form(None),
         db: AsyncSession = Depends(get_async_db),
         current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
@@ -357,6 +369,10 @@ async def update_worker(
         update_data["location"] = location
     if disability_degree is not None:  # Yangi maydon qo'shildi
         update_data["disability_degree"] = disability_degree
+    if aliment_payer is not None:
+        update_data["aliment_payer"] = aliment_payer
+    if aliment_payer_id is not None:
+        update_data["aliment_payer_id"] = aliment_payer_id
     if is_active is not None:
         update_data["is_active"] = is_active
 

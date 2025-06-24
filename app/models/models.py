@@ -46,6 +46,8 @@ class Worker(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     is_active = Column(Boolean, default=True)
     disability_degree = Column(String(2), nullable=True, default="no")
+    aliment_payer = Column(Boolean, nullable=True, default=False)
+    aliment_payer_id = Column(String(255), ForeignKey("aliment_payer.id"))
 
     # Django modelida foreign key qanday nomlangan bo'lsa, relationship ham shunga mos bo'lishi kerak
     feedbacks = relationship("Feedback", back_populates="worker")
@@ -113,3 +115,13 @@ class Skills(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=True, unique=True)
+
+
+class News(Base):
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(255), nullable = True)
+    title = Column(String(255), nullable = True)
+    description = Column(Text, nullable = True)
+    image = Column(String(255), nullable = True)  # Fayl yo'li sifatida saqlaymiz

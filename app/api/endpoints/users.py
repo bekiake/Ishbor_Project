@@ -1,10 +1,13 @@
 from typing import Any, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy import select
+
 from app.api.endpoints.auth import generate_access_token
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import models
 from app.database import get_db as get_async_db  # Asinxron DB session
-from app.schemas.schemas import Token, User, UserCreate, UserOut, UserUpdate, UserWithFeedbacks, WorkerOut
+from app.schemas import schemas
+from app.schemas.schemas import Token, User, UserCreate, UserOut, UserUpdate, UserWithFeedbacks, WorkerOut,NewsRead
 from app.crud import user as user_crud
 from app.crud import feedback as feedback_crud
 from app.crud import worker as worker_crud
@@ -278,3 +281,19 @@ async def generate_users(name: str, db: AsyncSession = Depends(get_async_db)) ->
     return {
         "message": f"{created_count} worker yozuvi workers_worker jadvaliga yaratildi, name: {name}"
     }
+
+@router.post("/news/", response_model=schemas.NewsRead)
+async def create_news(news: schemas.NewsCreate, db: AsyncSession = Depends(get_async_db)):
+    db_news = models.News(**news.dict())
+    db.add(db_news)
+    await db.commit()
+    await db.refresh(db_news)  # <- Shu joy juda muhim
+    return db_news
+
+@router.get("/news/{news_id}", response_model=schemas.NewsRead)
+async def get_news(news_id: int, db: AsyncSession = Depends(get_async_db)):
+    result = await db.execute(select(models.News).where(models.News.id == news_id))
+    db_news = result.scalars().first()  # scalars() -> model instance
+    if not db_news:
+        raise HTTPException(status_code=404, detail="News not found")
+    return db_news
