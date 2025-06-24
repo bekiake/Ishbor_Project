@@ -62,11 +62,12 @@ async def get_system_stats(
         "rating_distribution": feedback_stats["rating_distribution"],
         "payment_distribution": worker_stats["payment_distribution"],
         "gender_distribution": worker_stats["gender_distribution"],
+        "disability_distribution": worker_stats.get("disability_distribution", {}),  # Yangi maydon
         "top_skills": top_skills,
         "top_languages": top_languages,
     }
-    
-    
+
+
 @router.get("/export/workers")
 async def export_workers_excel(
         db: AsyncSession = Depends(get_async_db)
@@ -90,7 +91,7 @@ async def export_workers_excel(
         headers = [
             "ID", "Telegram ID", "Ism", "Haqida", "Yosh", "Telefon", "Jinsi",
             "To'lov turi", "Kunlik to'lov", "Tillar", "Ko'nikmalar",
-            "Manzil", "Rasm", "Yaratilgan sana", "Yangilangan sana", "Faol"
+            "Manzil", "Nogironlik darajasi", "Rasm", "Yaratilgan sana", "Yangilangan sana", "Faol"
         ]
 
         # Ustun nomlarini yozish
@@ -116,10 +117,11 @@ async def export_workers_excel(
                 worksheet.cell(row=row_num, column=10).value = worker.languages
                 worksheet.cell(row=row_num, column=11).value = worker.skills
                 worksheet.cell(row=row_num, column=12).value = worker.location
-                worksheet.cell(row=row_num, column=13).value = worker.image
-                worksheet.cell(row=row_num, column=14).value = worker.created_at.isoformat() if worker.created_at else ""
-                worksheet.cell(row=row_num, column=15).value = worker.updated_at.isoformat() if worker.updated_at else ""
-                worksheet.cell(row=row_num, column=16).value = "Ha" if worker.is_active else "Yo'q"
+                worksheet.cell(row=row_num, column=13).value = worker.disability_degree  # Yangi maydon
+                worksheet.cell(row=row_num, column=14).value = worker.image
+                worksheet.cell(row=row_num, column=15).value = worker.created_at.isoformat() if worker.created_at else ""
+                worksheet.cell(row=row_num, column=16).value = worker.updated_at.isoformat() if worker.updated_at else ""
+                worksheet.cell(row=row_num, column=17).value = "Ha" if worker.is_active else "Yo'q"
             except Exception as e:
                 # Qatorlardagi alohida xatolar butun jarayonni to'xtatmasligi kerak
                 continue
@@ -127,23 +129,28 @@ async def export_workers_excel(
         # Faylni BytesIO obyektiga saqlash
         workbook.save(output)
         output.seek(0)  # Pozitsiyasini boshiga qaytarish
-        
+
         # Response qaytarish
         headers = {
             'Content-Disposition': 'attachment; filename="workers_export.xlsx"',
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         }
         return Response(content=output.getvalue(), headers=headers)
-    
+
     except Exception as e:
         # Xatoni log qilish
         import logging
         logging.error(f"Export workers error: {str(e)}")
-        
+
         # Xato haqida xabar qaytarish
         raise HTTPException(status_code=500, detail=f"Export yaratishda xatolik: {str(e)}")
-    
-    
+
+
 @router.get("/skills", response_model=List[str])
 async def get_all_skills(db: AsyncSession = Depends(get_async_db)):
     return await worker_crud.get_all_skill_names(db)
+
+@router.get("/disability_degrees", response_model=List[str])
+async def get_all_disability_degrees(db: AsyncSession = Depends(get_async_db)):
+    """Barcha nogironlik darajalarini qaytarish"""
+    return await worker_crud.get_all_disability_degrees(db)

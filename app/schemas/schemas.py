@@ -36,6 +36,7 @@ class User(UserInDBBase):
     """User response schema"""
     pass
 
+
 class WorkerSimpleSchema(BaseModel):
     id: int
     name: str
@@ -44,12 +45,15 @@ class WorkerSimpleSchema(BaseModel):
     phone: Optional[str] = None
     time_type: Optional[str] = None
     location: Optional[str] = None
+    disability_degree: Optional[str] = None  # Yangi maydon
     skills: List[str]
     languages: List[str]
     image: Optional[str] = None
 
     class Config:
         orm_mode = True
+
+
 # Worker schemas
 class WorkerBase(BaseModel):
     """Worker uchun asosiy ma'lumotlar"""
@@ -65,6 +69,7 @@ class WorkerBase(BaseModel):
     languages: Optional[str] = None
     skills: Optional[str] = None
     location: Optional[str] = None
+    disability_degree: Optional[str] = None  # Yangi maydon
 
 
 class WorkerCreate(WorkerBase):
@@ -85,6 +90,7 @@ class WorkerUpdate(BaseModel):
     languages: Optional[str] = None
     skills: Optional[str] = None
     location: Optional[str] = None
+    disability_degree: Optional[str] = None  # Yangi maydon
 
 
 class WorkerLocation(BaseModel):
@@ -104,17 +110,16 @@ class WorkerInDBBase(WorkerBase):
         from_attributes = True  # SQLAlchemy modellardan ma'lumotlarni olish uchun
 
 
-
 class Worker(WorkerInDBBase):
     """Worker response schema"""
     languages_list: Optional[List[str]] = None
     skills_list: Optional[List[str]] = None
 
     # Eski @root_validator o'rniga @model_validator ishlatish
-    @field_validator('languages_list', 'skills_list', mode='before')
+    @field_validator('languages_list', 'skills_list', mode = 'before')
     @classmethod
     def set_lists_and_coords(cls, values, info):
-        
+
         data = info.data  # Modelning barcha ma'lumotlari
 
         # Languages ro'yxatini hosil qilish
@@ -133,7 +138,7 @@ class Worker(WorkerInDBBase):
 
         # Lokatsiyani qayta ishlash
         location = data.get('location')
-        
+
         # Field name bo'yicha qiymatni qaytarish
         field_name = info.field_name
         if field_name == 'languages_list':
@@ -144,6 +149,7 @@ class Worker(WorkerInDBBase):
             return location
         return values
 
+
 class Feedbackss(BaseModel):
     id: Optional[int]  # `id` avtomatik tarzda yaratiladi
     worker_id: int
@@ -152,7 +158,7 @@ class Feedbackss(BaseModel):
     text: str
     create_at: Optional[datetime] = None  # Yaratilish sanasi
     update_at: Optional[datetime] = None  # Yangilanish sanasi
-    user_name: Optional[str] # Foydalanuvchi nomi (agar kerak bo'lsa)
+    user_name: Optional[str]  # Foydalanuvchi nomi (agar kerak bo'lsa)
 
     class Config:
         orm_mode = True
@@ -163,7 +169,7 @@ class FeedbackBase(BaseModel):
     """Feedback uchun asosiy ma'lumotlar"""
     worker_id: int
     user_name: str
-    rate: int = Field(1, ge=1, le=5)
+    rate: int = Field(1, ge = 1, le = 5)
     text: Optional[str] = None
 
 
@@ -171,7 +177,7 @@ class FeedbackCreate(BaseModel):
     worker_id: int
     rate: int
     text: Optional[str] = None
-    
+
 
 class FeedbackResponse(BaseModel):
     id: int
@@ -180,11 +186,11 @@ class FeedbackResponse(BaseModel):
 
     class Config:
         orm_mode = True
-        
+
 
 class FeedbackUpdate(BaseModel):
     """Feedback yangilash uchun schema"""
-    rate: Optional[int] = Field(None, ge=1, le=5)
+    rate: Optional[int] = Field(None, ge = 1, le = 5)
     text: Optional[str] = None
 
 
@@ -239,6 +245,7 @@ class WorkerSearchParams(BaseModel):
     min_payment: Optional[int] = None
     max_payment: Optional[int] = None
     location: Optional[str] = None
+    disability_degree: Optional[str] = None  # Yangi maydon
     distance: Optional[float] = None  # km hisobida
 
 
@@ -250,6 +257,7 @@ class WorkerStats(BaseModel):
     average_rating: float
     payment_distribution: Dict[str, int]
     gender_distribution: Dict[str, int]
+    disability_distribution: Dict[str, int]  # Yangi maydon
 
 
 class SystemStats(BaseModel):
@@ -260,19 +268,19 @@ class SystemStats(BaseModel):
     average_rating: float
     top_skills: List[Dict[str, Any]]
     top_languages: List[Dict[str, Any]]
-    
-    
+    disability_stats: Dict[str, int]  # Yangi maydon
+
 
 class FeedbackOut(BaseModel):
     id: int
     rate: int
     text: Optional[str]
     create_at: datetime
-    user_name: Optional[str]  # Bu qo‘shilgan maydon
+    user_name: Optional[str]  # Bu qo'shilgan maydon
 
     class Config:
         orm_mode = True
-        
+
 
 class WorkerDetail(BaseModel):
     id: int
@@ -287,6 +295,7 @@ class WorkerDetail(BaseModel):
     languages: Optional[str]
     skills: Optional[str]
     location: Optional[str]
+    disability_degree: Optional[str]  # Yangi maydon
     created_at: datetime
     updated_at: datetime
     is_active: bool
@@ -294,6 +303,7 @@ class WorkerDetail(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class UserOut(BaseModel):
     id: int
@@ -321,6 +331,7 @@ class WorkerOut(BaseModel):
     languages: Optional[str] = None
     skills: Optional[str] = None
     location: Optional[str] = None
+    disability_degree: Optional[str] = None  # Yangi maydon
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     is_active: Optional[bool] = True

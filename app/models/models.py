@@ -45,6 +45,7 @@ class Worker(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     is_active = Column(Boolean, default=True)
+    disability_degree = Column(String(2), nullable=True, default="no")
 
     # Django modelida foreign key qanday nomlangan bo'lsa, relationship ham shunga mos bo'lishi kerak
     feedbacks = relationship("Feedback", back_populates="worker")

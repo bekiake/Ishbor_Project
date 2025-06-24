@@ -39,7 +39,13 @@ class Worker(models.Model):
         ('haftalik','Haftalik'),
         ('barchasi','Barchasi')
     )
-    
+    DISABILITY_CHOICES = (
+        ('no', 'Nogiron emas'),
+        ('1', '1-daraja nogironlik'),
+        ('2', '2-daraja nogironlik'),
+        ('3', '3-daraja nogironlik'),
+    )
+
 
     telegram_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Name')
@@ -57,7 +63,15 @@ class Worker(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='Active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    disability_degree = models.CharField(
+        max_length = 2,
+        choices = DISABILITY_CHOICES,
+        default = 'no',
+        verbose_name = 'Nogironlik darajasi'
+    )
 
+    def __str__(self):
+        return self.name if self.name else "Unknown Worker"
 
     def get_languages_list(self):
         return [lang.strip() for lang in self.languages.split(",")] if self.languages else []
