@@ -88,7 +88,7 @@ async def read_worker_me(
         "is_active": worker.is_active,
         "disability_degree": worker.disability_degree,  # Yangi maydon qo'shildi
         "aliment_payer": worker.aliment_payer,
-        "aliment_payer_id": worker.aliment_payer_id,
+        "aliment_payer_code": worker.aliment_payer_code,
     }
     return worker_data
 
@@ -109,7 +109,7 @@ async def create_worker_with_image(
         location: Optional[str] = Form(None),
         disability_degree: Optional[str] = Form(None),  # Yangi maydon qo'shildi
         aliment_payer: Optional[bool] = Form(None),
-        aliment_payer_id: Optional[str] = Form(None),
+        aliment_payer_code: Optional[str] = Form(None),
         image: Optional[UploadFile] = File(None),
         db: AsyncSession = Depends(get_async_db),
         current_user: models.User = Depends(get_current_active_user),
@@ -144,7 +144,7 @@ async def create_worker_with_image(
         location = location,
         disability_degree = disability_degree,  # Yangi maydon qo'shildi
         aliment_payer=aliment_payer,
-        aliment_payer_id = aliment_payer_id,
+        aliment_payer_code = aliment_payer_code,
     )
 
     db_worker = await worker_crud.create_worker(db = db, worker = worker_data)
@@ -329,7 +329,7 @@ async def update_worker(
         image: Optional[UploadFile] = File(None),
         is_active: Optional[bool] = Form(None),
         aliment_payer: Optional[bool] = Form(None),
-        aliment_payer_id: Optional[str] = Form(None),
+        aliment_payer_code: Optional[str] = Form(None),
         db: AsyncSession = Depends(get_async_db),
         current_user: models.User = Depends(get_current_active_user),
 ) -> Any:
@@ -371,8 +371,8 @@ async def update_worker(
         update_data["disability_degree"] = disability_degree
     if aliment_payer is not None:
         update_data["aliment_payer"] = aliment_payer
-    if aliment_payer_id is not None:
-        update_data["aliment_payer_id"] = aliment_payer_id
+    if aliment_payer_code is not None:
+        update_data["aliment_payer_code"] = aliment_payer_code
     if is_active is not None:
         update_data["is_active"] = is_active
 

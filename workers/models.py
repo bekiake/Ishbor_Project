@@ -65,7 +65,9 @@ class Worker(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     disability_degree = models.CharField(max_length = 2,choices = DISABILITY_CHOICES,default = 'no',verbose_name = 'Nogironlik darajasi')
     aliment_payer=models.BooleanField(default=False,verbose_name='Aliment Payer')
-    aliment_payer_id = models.CharField(max_length=100,null=True, blank=True, verbose_name='Aliment Payer ID')
+    aliment_payer_code = models.CharField(
+        max_length = 255, null = True, blank = True, verbose_name = 'Aliment Payer Kod'
+    )
 
     def __str__(self):
         return self.name if self.name else "Unknown Worker"

@@ -47,7 +47,7 @@ class Worker(Base):
     is_active = Column(Boolean, default=True)
     disability_degree = Column(String(2), nullable=True, default="no")
     aliment_payer = Column(Boolean, nullable=True, default=False)
-    aliment_payer_id = Column(String(255), ForeignKey("aliment_payer.id"))
+    aliment_payer_code = Column(String(255), nullable = True)
 
     # Django modelida foreign key qanday nomlangan bo'lsa, relationship ham shunga mos bo'lishi kerak
     feedbacks = relationship("Feedback", back_populates="worker")

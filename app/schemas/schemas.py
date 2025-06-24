@@ -71,7 +71,7 @@ class WorkerBase(BaseModel):
     location: Optional[str] = None
     disability_degree: Optional[str] = None
     aliment_payer: Optional[bool] = None  # <- BU QATORNI O'ZGARTIRDING
-    aliment_payer_id: Optional[str] = None
+    aliment_payer_code: Optional[str] = None
 
 
 class WorkerCreate(WorkerBase):
@@ -94,7 +94,7 @@ class WorkerUpdate(BaseModel):
     location: Optional[str] = None
     disability_degree: Optional[str] = None
     aliment_payer: Optional[bool] = None
-    aliment_payer_id: Optional[str] = None
+    aliment_payer_code: Optional[str] = None
 
 class WorkerLocation(BaseModel):
     """Worker lokatsiyasini yangilash uchun schema"""
