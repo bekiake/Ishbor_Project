@@ -103,6 +103,7 @@ class Feedback(models.Model):
     rate = models.IntegerField(choices=RATE_CHOICES, default=1)
     text = models.TextField(max_length=255, null=True, blank=True, verbose_name='Text')
     create_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, verbose_name='Active')
     update_at = models.DateTimeField(auto_now=True)
     
 

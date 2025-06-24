@@ -96,6 +96,7 @@ class Feedback(Base):
     # Foreign key nomlarini Django kabi nomlang
     worker_id = Column(Integer, ForeignKey("workers_worker.id", ondelete="CASCADE"))
     user_id = Column(Integer, ForeignKey("workers_user.id", ondelete="CASCADE"))
+    is_active = Column(Boolean, default = True)
     rate = Column(Integer, default=1)
     text = Column(Text, nullable=True)
     create_at = Column(DateTime, default=func.now())
