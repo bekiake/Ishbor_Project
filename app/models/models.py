@@ -119,7 +119,7 @@ class Skills(Base):
 
 
 class News(Base):
-    __tablename__ = "news"
+    __tablename__ = "workers_news"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(255), nullable = True)
@@ -130,11 +130,11 @@ class News(Base):
 
 
 class NewsView(Base):
-    __tablename__ = "news_view"
+    __tablename__ = "workers_news_view"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("workers_user.id", ondelete="CASCADE"))
-    news_id = Column(Integer, ForeignKey("news.id", ondelete="CASCADE"))
+    news_id = Column(Integer, ForeignKey("workers_news.id", ondelete="CASCADE"))
     created_at = Column(DateTime, default=func.now())
 
     __table_args__ = (
