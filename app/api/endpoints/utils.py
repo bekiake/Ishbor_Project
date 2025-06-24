@@ -33,39 +33,42 @@ router = APIRouter()
 
 @router.get("/stats/system")
 async def get_system_stats(
-        db: AsyncSession = Depends(get_async_db),
-        current_user: User = Depends(get_current_active_user),
-) -> Any:
-    
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+) -> dict[str, Any]:
+    """
+    Tizimning umumiy statistikalarini olish:
+      - foydalanuvchilar soni
+      - ishchilar soni
+      - fikrlar statistikasi
+      - top ko‘nikmalar va tillar
+    """
     # Foydalanuvchilar soni
     users_count = await user_crud.get_user_count(db)
     active_users_count = await user_crud.get_active_user_count(db)
 
     # Ishchilar statistikasi
-    worker_stats = await worker_crud.get_worker_statistics(db)
+    worker_stats = await worker_crud.get_worker_statistics(db) or {}
 
     # Fikrlar statistikasi
-    feedback_stats = await feedback_crud.get_feedback_statistics(db)
-
-    # Ko'nikmalar va tillar
-    top_skills = []
-    top_languages = []
+    feedback_stats = await feedback_crud.get_feedback_statistics(db) or {}
 
     return {
         "total_users": users_count,
         "active_users": active_users_count,
-        "total_workers": worker_stats["total_workers"],
-        "active_workers": worker_stats["active_workers"],
-        "total_feedbacks": feedback_stats["total_feedbacks"],
-        "active_feedbacks": feedback_stats["active_feedbacks"],
-        "average_rating": feedback_stats["average_rating"],
-        "rating_distribution": feedback_stats["rating_distribution"],
-        "payment_distribution": worker_stats["payment_distribution"],
-        "gender_distribution": worker_stats["gender_distribution"],
-        "disability_distribution": worker_stats.get("disability_distribution", {}),  # Yangi maydon
-        "top_skills": top_skills,
-        "top_languages": top_languages,
+        "total_workers": worker_stats.get("total_workers", 0),
+        "active_workers": worker_stats.get("active_workers", 0),
+        "total_feedbacks": feedback_stats.get("total_feedbacks", 0),
+        "active_feedbacks": feedback_stats.get("active_feedbacks", 0),
+        "average_rating": feedback_stats.get("average_rating", 0),
+        "rating_distribution": feedback_stats.get("rating_distribution", {}),
+        "payment_distribution": worker_stats.get("payment_distribution", {}),
+        "gender_distribution": worker_stats.get("gender_distribution", {}),
+        "disability_distribution": worker_stats.get("disability_distribution", {}),
+        "top_skills": [],       # Agar kelajakda qo‘shsang, shu yerga yoz
+        "top_languages": [],    # Shu yerga ham
     }
+
 
 
 @router.get("/export/workers")
