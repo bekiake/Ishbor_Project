@@ -137,9 +137,5 @@ class NewsView(Base):
     news_id = Column(Integer, ForeignKey("workers_news.id", ondelete="CASCADE"))
     created_at = Column(DateTime, default=func.now())
 
-    __table_args__ = (
-        UniqueConstraint("user_id", "news_id", name="unique_user_news_view"),
-    )
-
     user = relationship("User")
     news = relationship("News")
