@@ -343,17 +343,15 @@ class WorkerOut(BaseModel):
         "from_attributes": True
     }
 
-class NewsBase(BaseModel):
+
+
+class NewsOut(BaseModel):
+    id: int
     name: Optional[str]
     title: Optional[str]
     description: Optional[str]
     image: Optional[str]
-
-class NewsCreate(NewsBase):
-    pass
-
-class NewsRead(NewsBase):
-    id: int
+    count_views: int
 
     class Config:
-        from_attributes = True  # SQLAlchemy bilan ishlashi uchun
+        orm_mode = True

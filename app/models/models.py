@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float
+from django.db.models.fields import PositiveIntegerField
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import datetime
@@ -125,3 +126,20 @@ class News(Base):
     title = Column(String(255), nullable = True)
     description = Column(Text, nullable = True)
     image = Column(String(255), nullable = True)  # Fayl yo'li sifatida saqlaymiz
+    count_views = Column(Integer, default=0)
+
+
+class NewsView(Base):
+    __tablename__ = "news_view"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("workers_user.id", ondelete="CASCADE"))
+    news_id = Column(Integer, ForeignKey("news.id", ondelete="CASCADE"))
+    created_at = Column(DateTime, default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "news_id", name="unique_user_news_view"),
+    )
+
+    user = relationship("User")
+    news = relationship("News")

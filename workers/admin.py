@@ -48,6 +48,6 @@ class SkillsAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('name','title')
+    list_display = ('name','title', 'count_views')
     search_fields = ('name',)
     ordering = ('name',)

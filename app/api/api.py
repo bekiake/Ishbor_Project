@@ -5,7 +5,7 @@ Barcha API endpointlarini birlashtiruvchi router
 """
 from fastapi import APIRouter
 
-from app.api.endpoints import users, workers, feedbacks, auth, utils
+from app.api.endpoints import users, workers, feedbacks, auth, utils, news
 
 # Asosiy API router
 api_router = APIRouter()
@@ -29,6 +29,12 @@ api_router.include_router(
     feedbacks.router,
     prefix="/feedbacks",
     tags=["feedbacks"],
+)
+
+api_router.include_router(
+    news.router,
+    prefix="/news",
+    tags=["news"],
 )
 
 # Authentication routerini qo'shish

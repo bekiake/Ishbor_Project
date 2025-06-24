@@ -111,6 +111,18 @@ class News(models.Model):
     title = models.CharField(max_length=255, null=True, blank=True, verbose_name='Title')
     description = models.TextField(max_length=255, null=True, blank=True, verbose_name='Description')
     image = models.ImageField(upload_to='media/uploads/news/', null=True, blank=True)
+    count_views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name if self.name else "Unknown News"
+
+class NewsView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_views')
+    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='views')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'news')
+
+    def __str__(self):
+        return f"{self.user} viewed {self.news}"
