@@ -150,7 +150,7 @@ async def export_workers_excel(
 async def get_all_skills(db: AsyncSession = Depends(get_async_db)):
     return await worker_crud.get_all_skill_names(db)
 
-@router.get("/disability_degrees", response_model=List[str])
-async def get_all_disability_degrees(db: AsyncSession = Depends(get_async_db)):
-    """Barcha nogironlik darajalarini qaytarish"""
-    return await worker_crud.get_all_disability_degrees(db)
+# @router.get("/disability_degrees", response_model=List[str])
+# async def get_all_disability_degrees(db: AsyncSession = Depends(get_async_db)):
+#     """Barcha nogironlik darajalarini qaytarish"""
+#     return await worker_crud.get_all_disability_degrees(db)

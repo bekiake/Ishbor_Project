@@ -223,10 +223,10 @@ async def get_all_skill_names(db: AsyncSession) -> List[str]:
     names = result.scalars().all()
     return names
 
-async def get_all_disability_degrees(db: AsyncSession) -> list[str]:
-    # Barcha disability_degree maydonini olish
-    result = await db.execute(
-        select(Worker.disability_degree).distinct()
-    )
-    degrees = [row[0] for row in result.all() if row[0] is not None]
-    return degrees
+# async def get_all_disability_degrees(db: AsyncSession) -> list[str]:
+#     # Barcha disability_degree maydonini olish
+#     result = await db.execute(
+#         select(Worker.disability_degree).distinct()
+#     )
+#     degrees = [row[0] for row in result.all() if row[0] is not None]
+#     return degrees
