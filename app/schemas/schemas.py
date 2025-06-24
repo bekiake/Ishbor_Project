@@ -58,7 +58,7 @@ class WorkerSimpleSchema(BaseModel):
 class WorkerBase(BaseModel):
     """Worker uchun asosiy ma'lumotlar"""
     telegram_id: str
-    name: Optional[str]
+    name: Optional[str] = None
     about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
@@ -69,8 +69,8 @@ class WorkerBase(BaseModel):
     languages: Optional[str] = None
     skills: Optional[str] = None
     location: Optional[str] = None
-    disability_degree: Optional[str] = None  # Yangi maydon
-    aliment_payer: Optional[str] = None
+    disability_degree: Optional[str] = None
+    aliment_payer: Optional[bool] = None  # <- BU QATORNI O'ZGARTIRDING
     aliment_payer_id: Optional[str] = None
 
 
@@ -81,7 +81,7 @@ class WorkerCreate(WorkerBase):
 
 class WorkerUpdate(BaseModel):
     """Worker yangilash uchun schema"""
-    name: Optional[str]
+    name: Optional[str] = None
     about: Optional[str] = None
     age: Optional[int] = None
     phone: Optional[str] = None
@@ -92,10 +92,9 @@ class WorkerUpdate(BaseModel):
     languages: Optional[str] = None
     skills: Optional[str] = None
     location: Optional[str] = None
-    disability_degree: Optional[str] = None  # Yangi maydon
+    disability_degree: Optional[str] = None
     aliment_payer: Optional[bool] = None
-
-
+    aliment_payer_id: Optional[str] = None
 
 class WorkerLocation(BaseModel):
     """Worker lokatsiyasini yangilash uchun schema"""
