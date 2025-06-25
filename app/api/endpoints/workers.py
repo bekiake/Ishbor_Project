@@ -177,8 +177,6 @@ async def filter_workers(
         request: Request,
         name: Optional[str] = None,
         gender: Optional[str] = None,
-        disability_degree: Optional[str] = None,  # Yangi filter parametri qo'shildi
-        aliment_payer: Optional[str] = None,
         db: AsyncSession = Depends(get_async_db)
 ):
     raw_query_params = request.query_params
@@ -186,6 +184,8 @@ async def filter_workers(
     languages = raw_query_params.getlist("languages[]")
     age_range = raw_query_params.getlist("age_range[]")
     time_type = raw_query_params.getlist("time_type[]")
+    disability_degree = raw_query_params.getlist("disability_degree[]")
+    aliment_payer = raw_query_params.getlist("aliment_payers[]")
     stmt = select(models.Worker).where(models.Worker.is_active == True)
 
     # Name yoki skill bo'yicha filter
@@ -214,11 +214,19 @@ async def filter_workers(
     if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
-    # Disability Degree filter - yangi qo'shildi
-    if disability_degree and disability_degree.lower() != "barchasi":
-        stmt = stmt.where(models.Worker.disability_degree.ilike(disability_degree))
-    if aliment_payer and aliment_payer.lower() != "barchasi":
-        stmt = stmt.where(models.Worker.aliment_payer.ilike(aliment_payer))
+
+    if disability_degree and "barchasi" not in [d.lower() for d in disability_degree]:
+        disability_conditions = [
+            models.Worker.disability_degree.ilike(f"%{d}%") for d in disability_degree
+        ]
+        stmt = stmt.where(or_(*disability_conditions))
+
+    if aliment_payer and "barchasi" not in [a.lower() for a in aliment_payer]:
+        aliment_conditions = [
+            models.Worker.aliment_payer.ilike(f"%{a}%") for a in aliment_payer
+        ]
+        stmt = stmt.where(or_(*aliment_conditions))
+
     # Age Range
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
         age_conditions = []
