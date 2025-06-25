@@ -303,6 +303,7 @@ async def get_worker_with_feedbacks(worker_id: int, db: AsyncSession = Depends(g
         "location": worker.location,
         "disability_degree": worker.disability_degree,  # Yangi maydon qo'shildi
         "aliment_payer": worker.aliment_payer,
+        "aliment_payer_code": worker.aliment_payer_code,
         "created_at": str(worker.created_at),
         "feedbacks": [
             {

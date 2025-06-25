@@ -52,6 +52,9 @@ async def create_worker(db: AsyncSession, worker: WorkerCreate) -> Worker:
         languages=worker.languages,
         skills=worker.skills,
         location=worker.location,
+        disability_degree=worker.disability_degree,
+        aliment_payer=worker.aliment_payer,
+        aliment_payer_code=worker.aliment_payer_code
     )
     db.add(db_worker)
     await db.commit()
