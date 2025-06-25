@@ -221,11 +221,13 @@ async def filter_workers(
         ]
         stmt = stmt.where(or_(*disability_conditions))
 
-    if aliment_payer and "barchasi" not in [a.lower() for a in aliment_payer]:
-        aliment_conditions = [
-            models.Worker.aliment_payer.ilike(f"%{a}%") for a in aliment_payer
-        ]
-        stmt = stmt.where(or_(*aliment_conditions))
+    if aliment_payer and "barchasi" not in [str(a).lower() for a in aliment_payer]:
+        # 1 yoki 0 string bo'lib keladi, ularni boolean ga aylantiramiz
+        try:
+            bool_values = [bool(int(a)) for a in aliment_payer if a in ["0", "1"]]
+            stmt = stmt.where(models.Worker.aliment_payer.in_(bool_values))
+        except ValueError:
+            return {"error": "aliment_payers[] values must be 0 or 1"}
 
     # Age Range
     if age_range and "barchasi" not in [a.lower() for a in age_range]:
