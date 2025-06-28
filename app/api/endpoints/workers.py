@@ -177,6 +177,8 @@ async def filter_workers(
         request: Request,
         name: Optional[str] = None,
         gender: Optional[str] = None,
+        min_narx: Optional[int] = None,
+        max_narx: Optional[int] = None,
         db: AsyncSession = Depends(get_async_db)
 ):
     raw_query_params = request.query_params
@@ -214,12 +216,18 @@ async def filter_workers(
     if gender and gender.lower() != "barchasi":
         stmt = stmt.where(models.Worker.gender.ilike(gender))
 
-
+    #disability
     if disability_degree and "barchasi" not in [d.lower() for d in disability_degree]:
         disability_conditions = [
             models.Worker.disability_degree.ilike(f"%{d}%") for d in disability_degree
         ]
         stmt = stmt.where(or_(*disability_conditions))
+    # Narx oralig'i (filter narxlarni ichida bo‘lishi kerak)
+    if min_narx is not None:
+        stmt = stmt.where(models.Worker.daily_payment >= min_narx)
+
+    if max_narx is not None:
+        stmt = stmt.where(models.Worker.daily_payment <= max_narx)
 
     if aliment_payer and "barchasi" not in [str(a).lower() for a in aliment_payer]:
         # 1 yoki 0 string bo'lib keladi, ularni boolean ga aylantiramiz
@@ -263,6 +271,8 @@ async def filter_workers(
             "image": f"https://admin.ishbozor.uz{w.image}" if w.image else None,
             "disability_degree": w.disability_degree,  # Yangi maydon qo'shildi
             "aliment_payer":w.aliment_payer,
+            "daily_payment":w.daily_payment,
+
         }
         for w in workers
     ]
